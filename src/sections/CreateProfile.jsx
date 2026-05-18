@@ -2,31 +2,54 @@ import { ArrowRight, Camera, CheckCircle2 } from "lucide-react";
 import { useState } from "react";
 import { serviceCategories } from "../data";
 
-const PROFILE_FORM_ACTION = "ADD_PROFILE_GOOGLE_FORM_ACTION_URL_HERE";
+const PROFILE_FORM_ACTION =
+  "https://docs.google.com/forms/d/e/1FAIpQLSeu5wxGufC7xIqMt-9OAywEsMwjJPy17WilfYG2bZfYcnKRdQ/formResponse";
 const PROFILE_ENTRY_IDS = {
-  firstName: "entry.ADD_FIRST_NAME_ID",
-  location: "entry.ADD_CITY_NEIGHBOURHOOD_ID",
-  intent: "entry.ADD_INTENT_ID",
-  category: "entry.ADD_SERVICE_CATEGORY_ID",
-  bio: "entry.ADD_SHORT_BIO_ID",
-  contactMethod: "entry.ADD_CONTACT_METHOD_ID",
-  contactValue: "entry.ADD_CONTACT_VALUE_ID",
-  availability: "entry.ADD_AVAILABILITY_ID",
-  rate: "entry.ADD_RATE_OR_PRICE_ID",
+  firstName: "entry.1144826925",
+  location: "entry.149696760",
+  intent: "entry.1479677989",
+  category: "entry.106860103",
+  bio: "entry.1046879868",
+  contactMethod: "entry.1441048063",
+  contactValue: "entry.1615319139",
+  availability: "entry.1747636226",
+  rate: "entry.293136723",
+  photoLink: "entry.1580824084",
 };
 
-const isProfileFormReady = !PROFILE_FORM_ACTION.includes("ADD_PROFILE");
+const PROFILE_INTENTS = [
+  ["Offer help", "I want to Offer help/services"],
+  ["Need help", "I need to Request local help"],
+  ["Both", "Both offering and requesting help"],
+];
+
+const SERVICE_CATEGORY_VALUES = {
+  Cleaning: "Cleaning (House, office, general tidiness)",
+  "Moving help": "Moving help / Heavy lifting",
+  Tutoring: "Tutoring / Academic support",
+  Caregiving: "General Caregiving / Companionship",
+  "Nanny / childcare": "Nanny / Childcare",
+  "Elder support": "Elder support / Assisted living help",
+  "Pet care": "Pet care / Dog walking",
+  Handyman: "Handyman / Minor home repair",
+  "Snow removal": "Snow removal",
+  "Yard work": "Yard work / Gardening",
+  "Event help": "Event help / Setup & breakdown",
+  "Creative services": "Creative services (Design, writing, art)",
+  Other: "Other (Please describe in your bio)",
+};
+
+const CONTACT_METHODS = [
+  ["Email", "Email"],
+  ["Phone", "Phone Call"],
+  ["Text message", "Text Message"],
+];
 
 export default function CreateProfile() {
   const [submitted, setSubmitted] = useState(false);
 
   async function handleSubmit(event) {
     event.preventDefault();
-
-    if (!isProfileFormReady) {
-      setSubmitted(true);
-      return;
-    }
 
     const form = event.currentTarget;
     const formData = new FormData(form);
@@ -62,10 +85,9 @@ export default function CreateProfile() {
             This MVP keeps participation simple: a public profile, one clear category, and a contact method people can use outside CONECLY.
           </p>
           <div className="mt-8 rounded-lg border border-conecly-ink/10 bg-conecly-paper p-5 shadow-line">
-            <p className="text-sm font-semibold text-conecly-ink">Google Form setup needed</p>
+            <p className="text-sm font-semibold text-conecly-ink">Community intake</p>
             <p className="mt-2 text-sm leading-6 text-conecly-ink/62">
-              Replace <span className="font-semibold text-conecly-ink">PROFILE_FORM_ACTION</span> and each{" "}
-              <span className="font-semibold text-conecly-ink">PROFILE_ENTRY_IDS</span> value in this section once the profile Google Form is created.
+              Share a clear, grounded profile so neighbours can understand what you offer, what you need, and how to reach you.
             </p>
           </div>
         </div>
@@ -78,9 +100,11 @@ export default function CreateProfile() {
             I am here to
             <select name="intent" required className="form-field">
               <option value="">Choose one</option>
-              <option>Offer help</option>
-              <option>Need help</option>
-              <option>Both</option>
+              {PROFILE_INTENTS.map(([label, value]) => (
+                <option key={value} value={value}>
+                  {label}
+                </option>
+              ))}
             </select>
           </label>
 
@@ -89,7 +113,9 @@ export default function CreateProfile() {
             <select name="category" required className="form-field">
               <option value="">Choose a category</option>
               {serviceCategories.map((category) => (
-                <option key={category}>{category}</option>
+                <option key={category} value={SERVICE_CATEGORY_VALUES[category]}>
+                  {category}
+                </option>
               ))}
             </select>
           </label>
@@ -109,13 +135,15 @@ export default function CreateProfile() {
             Contact method
             <select name="contactMethod" required className="form-field">
               <option value="">Choose one</option>
-              <option>Email</option>
-              <option>Phone</option>
-              <option>Instagram</option>
+              {CONTACT_METHODS.map(([label, value]) => (
+                <option key={value} value={value}>
+                  {label}
+                </option>
+              ))}
             </select>
           </label>
 
-          <Field label="Contact detail" name="contactValue" required placeholder="you@example.com, phone, or @handle" />
+          <Field label="Contact detail" name="contactValue" required placeholder="you@example.com or phone number" />
           <Field label="Availability" name="availability" placeholder="Weekends, evenings, flexible" />
           <Field label="Rate or price" name="rate" placeholder="$25/hr, free, barter, negotiable" />
 
@@ -131,6 +159,16 @@ export default function CreateProfile() {
             </div>
           </div>
 
+          <label className="grid gap-2 text-sm font-semibold text-conecly-ink sm:col-span-2">
+            Photo link
+            <input
+              name="photoLink"
+              type="url"
+              placeholder="Optional link to a professional or service-related photo"
+              className="form-field"
+            />
+          </label>
+
           <button
             type="submit"
             className="inline-flex items-center justify-center gap-2 rounded-lg bg-conecly-forest px-6 py-4 font-semibold text-white shadow-soft transition hover:bg-conecly-teal sm:col-span-2"
@@ -142,7 +180,7 @@ export default function CreateProfile() {
           {submitted && (
             <p className="flex items-start gap-2 rounded-lg bg-conecly-mist px-4 py-3 text-sm font-medium leading-6 text-conecly-teal sm:col-span-2">
               <CheckCircle2 size={18} className="mt-0.5 shrink-0" />
-              Profile form is ready visually. Add the Google Form action URL and entry IDs to start storing submissions.
+              Your profile has been submitted. Thank you for helping shape CONECLY in your community.
             </p>
           )}
         </form>
