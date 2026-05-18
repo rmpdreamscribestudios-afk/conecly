@@ -16,7 +16,7 @@ import { isSupabaseConfigured, supabase, supabaseDiagnostics } from "../lib/supa
 
 const PARTICIPATION_FILTERS = ["Offer help", "Need help", "Both"];
 
-export default function Profiles() {
+export default function Profiles({ headingLevel = "h1" }) {
   const [profiles, setProfiles] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -112,15 +112,17 @@ export default function Profiles() {
     setFilters((current) => ({ ...current, [name]: value }));
   }
 
+  const Heading = headingLevel;
+
   return (
-    <section className="bg-conecly-paper px-5 py-12 sm:px-8 sm:py-16 lg:py-20">
+    <section id="profiles" className="bg-conecly-paper px-5 py-12 sm:px-8 sm:py-16 lg:py-20">
       <div className="mx-auto max-w-7xl">
         <div className="grid gap-8 border-b border-conecly-ink/10 pb-10 lg:grid-cols-[0.95fr_1.05fr] lg:items-end">
           <div>
             <p className="eyebrow">Profiles</p>
-            <h1 className="mt-4 max-w-4xl text-[2.5rem] font-semibold leading-[1.02] text-conecly-ink sm:text-6xl">
+            <Heading className="mt-4 max-w-4xl text-[2.5rem] font-semibold leading-[1.02] text-conecly-ink sm:text-6xl">
               Browse CONECLY profiles.
-            </h1>
+            </Heading>
             <p className="mt-5 max-w-2xl text-lg leading-8 text-conecly-ink/66">
               Real submitted profiles from people offering help, asking for support, or doing both nearby.
             </p>

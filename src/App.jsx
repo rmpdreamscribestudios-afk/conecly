@@ -27,6 +27,7 @@ export default function App() {
             <Exchange />
             <LocalOpportunities />
             <CreateProfile />
+            <Profiles headingLevel="h2" />
             <CommunityFlow />
             <Waitlist />
           </>
