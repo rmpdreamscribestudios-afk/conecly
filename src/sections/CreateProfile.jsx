@@ -26,31 +26,17 @@ export default function CreateProfile() {
 
     const form = event.currentTarget;
     const formData = new FormData(form);
-    const category = formData.get("category") ?? "";
     const profile = {
       first_name: formData.get("firstName")?.trim() ?? "",
-      location: formData.get("location")?.trim() ?? "",
-      intent: formData.get("intent") ?? "",
+      city: formData.get("city")?.trim() ?? "",
+      participation_type: formData.get("participationType") ?? "",
+      service_category: formData.get("serviceCategory") ?? "",
       bio: formData.get("bio")?.trim() ?? "",
       contact_method: formData.get("contactMethod") ?? "",
-      contact_value: formData.get("contactValue")?.trim() ?? "",
+      contact_details: formData.get("contactDetails")?.trim() ?? "",
       availability: formData.get("availability")?.trim() ?? "",
       rate: formData.get("rate")?.trim() ?? "",
-      photo_link: formData.get("photoLink")?.trim() ?? "",
-    };
-
-    const opportunity = {
-      first_name: profile.first_name,
-      location: profile.location,
-      intent: profile.intent,
-      type: getOpportunityType(profile.intent),
-      category,
-      description: profile.bio,
-      contact_method: profile.contact_method,
-      contact_value: profile.contact_value,
-      availability: profile.availability,
-      rate: profile.rate,
-      photo_link: profile.photo_link,
+      photo_url: formData.get("photoUrl")?.trim() ?? "",
     };
 
     setIsSubmitting(true);
@@ -69,29 +55,10 @@ export default function CreateProfile() {
 
     try {
       const supabase = getSupabaseClient();
-      console.log("[CreateProfile] Submitting profile payload to Supabase profiles table", {
-        table: "profiles",
-        role: "anon",
-        env: supabaseDiagnostics,
-        payload: profile,
-      });
-
-      const profileResponse = await supabase.from("profiles").insert(profile);
-      console.log("[CreateProfile] Supabase profiles insert response", profileResponse);
-
-      const { error: profileError } = profileResponse;
+      const { error: profileError } = await supabase.from("profiles").insert(profile);
 
       if (profileError) {
         throw profileError;
-      }
-
-      const opportunityResponse = await supabase.from("opportunities").insert(opportunity);
-      console.log("[CreateProfile] Supabase opportunities insert response", opportunityResponse);
-
-      const { error: opportunityError } = opportunityResponse;
-
-      if (opportunityError) {
-        throw opportunityError;
       }
 
       setSubmitted(true);
@@ -130,11 +97,11 @@ export default function CreateProfile() {
 
         <form onSubmit={handleSubmit} className="premium-card grid gap-5 p-5 sm:grid-cols-2 sm:p-7">
           <Field label="First name" name="firstName" required placeholder="Maya" />
-          <Field label="City / neighbourhood" name="location" required placeholder="Parkdale" />
+          <Field label="City / neighbourhood" name="city" required placeholder="Parkdale" />
 
           <label className="grid gap-2 text-sm font-semibold text-conecly-ink">
             I am here to
-            <select name="intent" required className="form-field">
+            <select name="participationType" required className="form-field">
               <option value="">Choose one</option>
               {PROFILE_INTENTS.map(([label, value]) => (
                 <option key={value} value={value}>
@@ -146,7 +113,7 @@ export default function CreateProfile() {
 
           <label className="grid gap-2 text-sm font-semibold text-conecly-ink">
             Service category
-            <select name="category" required className="form-field">
+            <select name="serviceCategory" required className="form-field">
               <option value="">Choose a category</option>
               {serviceCategories.map((category) => (
                 <option key={category} value={category}>
@@ -179,7 +146,7 @@ export default function CreateProfile() {
             </select>
           </label>
 
-          <Field label="Contact detail" name="contactValue" required placeholder="you@example.com or phone number" />
+          <Field label="Contact details" name="contactDetails" required placeholder="you@example.com or phone number" />
           <Field label="Availability" name="availability" placeholder="Weekends, evenings, flexible" />
           <Field label="Rate or price" name="rate" placeholder="$25/hr, free, barter, negotiable" />
 
@@ -198,7 +165,7 @@ export default function CreateProfile() {
           <label className="grid gap-2 text-sm font-semibold text-conecly-ink sm:col-span-2">
             Photo link
             <input
-              name="photoLink"
+              name="photoUrl"
               type="url"
               placeholder="Optional link to a professional or service-related photo"
               className="form-field"
@@ -230,14 +197,6 @@ export default function CreateProfile() {
       </div>
     </section>
   );
-}
-
-function getOpportunityType(intent) {
-  if (intent?.toLowerCase().includes("request")) {
-    return "Request";
-  }
-
-  return "Offer";
 }
 
 function formatSupabaseError(error) {
