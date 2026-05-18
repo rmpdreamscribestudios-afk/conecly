@@ -54,37 +54,30 @@ VITE_SUPABASE_ANON_KEY=your-publishable-anon-key
 
 Use the public anon/publishable key from Supabase, not a service role key. Because `VITE_` variables are bundled into the client, the database must be protected with Row Level Security policies.
 
-The frontend expects lightweight `profiles` and `opportunities` tables. `profiles` receives the full private profile submission, and its insert payload must match these columns:
+The frontend expects a lightweight public `profiles` table. `profiles` receives the public profile submission, and its insert/read payload must match these columns:
 
 ```text
 first_name
-location
-intent
+city
+participation_type
+service_category
 bio
 contact_method
-contact_value
+contact_details
 availability
 rate
-photo_link
+photo_url
 created_at
 ```
 
-`opportunities` receives the public feed row generated from the same form, including the selected category:
+The Profiles page reads from `profiles` with:
 
 ```text
-first_name
-location
-intent
-type
-category
-description
-contact_method
-contact_value
-availability
-rate
-photo_link
-created_at
+select *
+order created_at desc
 ```
+
+If Row Level Security is enabled, add a narrow public read policy for the anonymous client so submitted profiles can appear on `/profiles`.
 
 ## Project Structure
 
@@ -154,9 +147,9 @@ created_at
 4. Add `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` for Production, Preview, and Development.
 5. Click **Deploy**.
 6. After the first deploy, open the production URL and verify the page loads.
-7. Submit a test profile, confirm a row appears in both Supabase tables, then remove the test row if needed.
+7. Submit a test profile, confirm a row appears in the Supabase `profiles` table, open `/profiles`, then remove the test row if needed.
 
-Deploy safely by keeping the Supabase service role key out of Vercel, enabling RLS before sharing the production URL, and starting with narrow MVP policies: allow anonymous inserts into `profiles` and `opportunities`, and allow anonymous reads only from `opportunities`.
+Deploy safely by keeping the Supabase service role key out of Vercel, enabling RLS before sharing the production URL, and starting with narrow MVP policies: allow anonymous inserts into `profiles` and allow anonymous reads from the public profile fields in `profiles`.
 
 ## Production Notes
 

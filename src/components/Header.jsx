@@ -25,7 +25,7 @@ export default function Header() {
           ))}
         </div>
         <a
-          href="#waitlist"
+          href="/#waitlist"
           className="hidden items-center gap-2 rounded-lg bg-conecly-forest px-5 py-3 text-sm font-semibold text-white shadow-line transition hover:bg-conecly-teal lg:inline-flex"
         >
           Join waitlist
@@ -55,7 +55,7 @@ export default function Header() {
               </a>
             ))}
             <a
-              href="#waitlist"
+              href="/#waitlist"
               onClick={() => setOpen(false)}
               className="mt-2 inline-flex items-center justify-center gap-2 rounded-lg bg-conecly-forest px-5 py-3 text-sm font-semibold text-white"
             >

@@ -63,6 +63,7 @@ export default function CreateProfile() {
 
       setSubmitted(true);
       setSuccessMessage("Your profile was written to Supabase successfully.");
+      window.dispatchEvent(new CustomEvent("conecly:profile-created"));
       form.reset();
     } catch (error) {
       const visibleError = formatSupabaseError(error);

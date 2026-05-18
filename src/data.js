@@ -15,10 +15,10 @@ import {
 } from "lucide-react";
 
 export const navigation = [
-  { label: "How it works", href: "#how" },
-  { label: "Browse profiles", href: "#browse-profiles" },
-  { label: "Create profile", href: "#create-profile" },
-  { label: "Waitlist", href: "#waitlist" },
+  { label: "How it works", href: "/#how" },
+  { label: "Profiles", href: "/profiles" },
+  { label: "Create profile", href: "/#create-profile" },
+  { label: "Waitlist", href: "/#waitlist" },
 ];
 
 export const serviceCategories = [

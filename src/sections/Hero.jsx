@@ -17,14 +17,14 @@ export default function Hero() {
         </p>
         <div className="mt-9 flex flex-col gap-3 sm:flex-row">
           <a
-            href="#waitlist"
+            href="/#waitlist"
             className="inline-flex items-center justify-center gap-2 rounded-lg bg-conecly-forest px-6 py-4 text-base font-semibold text-white shadow-soft transition hover:bg-conecly-teal sm:w-auto"
           >
             Join the waitlist
             <ArrowRight size={18} />
           </a>
           <a
-            href="#how"
+            href="/#how"
             className="inline-flex items-center justify-center gap-2 rounded-lg border border-conecly-ink/12 bg-white/88 px-6 py-4 text-base font-semibold text-conecly-ink transition hover:border-conecly-teal/30 hover:text-conecly-teal sm:w-auto"
           >
             See how it works

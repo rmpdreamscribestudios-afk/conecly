@@ -34,7 +34,7 @@ export default function Logo({ compact = false, linked = true }) {
   }
 
   return (
-    <a href="#top" className="flex items-center gap-2.5" aria-label="CONECLY home">
+    <a href="/" className="flex items-center gap-2.5" aria-label="CONECLY home">
       {mark}
     </a>
   );
