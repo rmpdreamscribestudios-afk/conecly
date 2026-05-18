@@ -45,7 +45,33 @@ npm run preview
 
 ## Environment Variables
 
-No environment variables are required for the current static site. Use `.env.example` as the template if public Vite variables are added later.
+CONECLY uses Supabase from the browser for the MVP profile and opportunity flows. Add these variables locally in `.env.local` and in Vercel project settings:
+
+```bash
+VITE_SUPABASE_URL=https://llbqmjkrnaeulsazmdoe.supabase.co
+VITE_SUPABASE_ANON_KEY=your-publishable-anon-key
+```
+
+Use the public anon/publishable key from Supabase, not a service role key. Because `VITE_` variables are bundled into the client, the database must be protected with Row Level Security policies.
+
+The frontend expects lightweight `profiles` and `opportunities` tables with these columns:
+
+```text
+first_name
+location
+intent
+category
+bio / description
+contact_method
+contact_value
+availability
+rate
+photo_link
+type
+created_at
+```
+
+`profiles` receives the full profile submission. `opportunities` receives the public feed row generated from the same form.
 
 ## Project Structure
 
@@ -112,9 +138,12 @@ No environment variables are required for the current static site. Use `.env.exa
    Development Command: npm run dev
    ```
 
-4. Leave Environment Variables empty for this version.
+4. Add `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` for Production, Preview, and Development.
 5. Click **Deploy**.
 6. After the first deploy, open the production URL and verify the page loads.
+7. Submit a test profile, confirm a row appears in both Supabase tables, then remove the test row if needed.
+
+Deploy safely by keeping the Supabase service role key out of Vercel, enabling RLS before sharing the production URL, and starting with narrow MVP policies: allow anonymous inserts into `profiles` and `opportunities`, and allow anonymous reads only from `opportunities`.
 
 ## Production Notes
 

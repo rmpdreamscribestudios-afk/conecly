@@ -1,43 +1,13 @@
 import { ArrowRight, Camera, CheckCircle2 } from "lucide-react";
 import { useState } from "react";
 import { serviceCategories } from "../data";
-
-const PROFILE_FORM_ACTION =
-  "https://docs.google.com/forms/d/e/1FAIpQLSeu5wxGufC7xIqMt-9OAywEsMwjJPy17WilfYG2bZfYcnKRdQ/formResponse";
-const PROFILE_ENTRY_IDS = {
-  firstName: "entry.1144826925",
-  location: "entry.149696760",
-  intent: "entry.1479677989",
-  category: "entry.106860103",
-  bio: "entry.1046879868",
-  contactMethod: "entry.1441048063",
-  contactValue: "entry.1615319139",
-  availability: "entry.1747636226",
-  rate: "entry.293136723",
-  photoLink: "entry.1580824084",
-};
+import { getSupabaseClient } from "../lib/supabase";
 
 const PROFILE_INTENTS = [
   ["Offer help", "I want to Offer help/services"],
   ["Need help", "I need to Request local help"],
   ["Both", "Both offering and requesting help"],
 ];
-
-const SERVICE_CATEGORY_VALUES = {
-  Cleaning: "Cleaning (House, office, general tidiness)",
-  "Moving help": "Moving help / Heavy lifting",
-  Tutoring: "Tutoring / Academic support",
-  Caregiving: "General Caregiving / Companionship",
-  "Nanny / childcare": "Nanny / Childcare",
-  "Elder support": "Elder support / Assisted living help",
-  "Pet care": "Pet care / Dog walking",
-  Handyman: "Handyman / Minor home repair",
-  "Snow removal": "Snow removal",
-  "Yard work": "Yard work / Gardening",
-  "Event help": "Event help / Setup & breakdown",
-  "Creative services": "Creative services (Design, writing, art)",
-  Other: "Other (Please describe in your bio)",
-};
 
 const CONTACT_METHODS = [
   ["Email", "Email"],
@@ -47,29 +17,65 @@ const CONTACT_METHODS = [
 
 export default function CreateProfile() {
   const [submitted, setSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   async function handleSubmit(event) {
     event.preventDefault();
 
     const form = event.currentTarget;
     const formData = new FormData(form);
-    const googleFormData = new URLSearchParams();
+    const profile = {
+      first_name: formData.get("firstName")?.trim() ?? "",
+      location: formData.get("location")?.trim() ?? "",
+      intent: formData.get("intent") ?? "",
+      category: formData.get("category") ?? "",
+      bio: formData.get("bio")?.trim() ?? "",
+      contact_method: formData.get("contactMethod") ?? "",
+      contact_value: formData.get("contactValue")?.trim() ?? "",
+      availability: formData.get("availability")?.trim() ?? "",
+      rate: formData.get("rate")?.trim() ?? "",
+      photo_link: formData.get("photoLink")?.trim() ?? "",
+    };
 
-    Object.entries(PROFILE_ENTRY_IDS).forEach(([fieldName, entryId]) => {
-      googleFormData.append(entryId, formData.get(fieldName) ?? "");
-    });
+    const opportunity = {
+      first_name: profile.first_name,
+      location: profile.location,
+      intent: profile.intent,
+      type: getOpportunityType(profile.intent),
+      category: profile.category,
+      description: profile.bio,
+      contact_method: profile.contact_method,
+      contact_value: profile.contact_value,
+      availability: profile.availability,
+      rate: profile.rate,
+      photo_link: profile.photo_link,
+    };
+
+    setIsSubmitting(true);
+    setErrorMessage("");
 
     try {
-      await fetch(PROFILE_FORM_ACTION, {
-        method: "POST",
-        mode: "no-cors",
-        body: googleFormData,
-      });
+      const supabase = getSupabaseClient();
+      const { error: profileError } = await supabase.from("profiles").insert(profile);
+
+      if (profileError) {
+        throw profileError;
+      }
+
+      const { error: opportunityError } = await supabase.from("opportunities").insert(opportunity);
+
+      if (opportunityError) {
+        throw opportunityError;
+      }
 
       setSubmitted(true);
       form.reset();
     } catch (error) {
       console.error("Unable to submit profile form", error);
+      setErrorMessage("We could not submit this profile yet. Please check the Supabase settings and try again.");
+    } finally {
+      setIsSubmitting(false);
     }
   }
 
@@ -113,7 +119,7 @@ export default function CreateProfile() {
             <select name="category" required className="form-field">
               <option value="">Choose a category</option>
               {serviceCategories.map((category) => (
-                <option key={category} value={SERVICE_CATEGORY_VALUES[category]}>
+                <option key={category} value={category}>
                   {category}
                 </option>
               ))}
@@ -171,9 +177,10 @@ export default function CreateProfile() {
 
           <button
             type="submit"
+            disabled={isSubmitting}
             className="inline-flex items-center justify-center gap-2 rounded-lg bg-conecly-forest px-6 py-4 font-semibold text-white shadow-soft transition hover:bg-conecly-teal sm:col-span-2"
           >
-            Create profile
+            {isSubmitting ? "Creating profile..." : "Create profile"}
             <ArrowRight size={17} />
           </button>
 
@@ -183,10 +190,24 @@ export default function CreateProfile() {
               Your profile has been submitted. Thank you for helping shape CONECLY in your community.
             </p>
           )}
+
+          {errorMessage && (
+            <p className="rounded-lg border border-conecly-clay/25 bg-conecly-clay/10 px-4 py-3 text-sm font-medium leading-6 text-conecly-ink sm:col-span-2">
+              {errorMessage}
+            </p>
+          )}
         </form>
       </div>
     </section>
   );
+}
+
+function getOpportunityType(intent) {
+  if (intent?.toLowerCase().includes("request")) {
+    return "Request";
+  }
+
+  return "Offer";
 }
 
 function Field({ label, name, required = false, placeholder }) {
