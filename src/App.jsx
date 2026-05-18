@@ -1,5 +1,6 @@
 import Footer from "./components/Footer";
 import Header from "./components/Header";
+import About from "./pages/About";
 import CommunityFlow from "./sections/CommunityFlow";
 import CreateProfile from "./sections/CreateProfile";
 import Exchange from "./sections/Exchange";
@@ -12,6 +13,7 @@ import WhoFor from "./sections/WhoFor";
 
 export default function App() {
   const path = window.location.pathname;
+  const isAboutPage = path === "/about";
   const isProfilesPage = path === "/profiles";
   const isProfileDetailPage = path.startsWith("/profiles/");
 
@@ -21,6 +23,8 @@ export default function App() {
       <main>
         {isProfileDetailPage ? (
           <ProfileDetailComingSoon />
+        ) : isAboutPage ? (
+          <About />
         ) : isProfilesPage ? (
           <Profiles />
         ) : (
