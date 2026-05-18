@@ -1,12 +1,35 @@
 import { ArrowRight, Mail } from "lucide-react";
 import { useState } from "react";
 
+const GOOGLE_FORM_ACTION =
+  "https://docs.google.com/forms/d/e/1FAIpQLSdIUPI_f8tv1prw_ALoiSrjxI9bHjUa6kkmy9XyvRoHLxf-sQ/formResponse";
+const EMAIL_ENTRY_ID = "entry.1713648840";
+const CITY_ENTRY_ID = "entry.1262869177";
+
 export default function Waitlist() {
   const [submitted, setSubmitted] = useState(false);
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault();
-    setSubmitted(true);
+
+    const form = event.currentTarget;
+    const formData = new FormData(form);
+    const googleFormData = new URLSearchParams();
+    googleFormData.append(EMAIL_ENTRY_ID, formData.get("email") ?? "");
+    googleFormData.append(CITY_ENTRY_ID, formData.get("city") ?? "");
+
+    try {
+      await fetch(GOOGLE_FORM_ACTION, {
+        method: "POST",
+        mode: "no-cors",
+        body: googleFormData,
+      });
+
+      setSubmitted(true);
+      form.reset();
+    } catch (error) {
+      console.error("Unable to submit waitlist form", error);
+    }
   }
 
   return (
@@ -35,6 +58,7 @@ export default function Waitlist() {
               <Mail size={20} className="shrink-0 text-conecly-emerald" />
               <input
                 id="email"
+                name="email"
                 type="email"
                 required
                 placeholder="you@example.com"
@@ -44,7 +68,9 @@ export default function Waitlist() {
             <label className="sr-only" htmlFor="city">City</label>
             <input
               id="city"
+              name="city"
               type="text"
+              required
               placeholder="Your city"
               className="rounded-lg bg-white px-4 py-3.5 text-conecly-ink outline-none placeholder:text-conecly-ink/42"
             />
