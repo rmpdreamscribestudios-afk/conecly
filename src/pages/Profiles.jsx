@@ -389,7 +389,7 @@ export function ProfileDetail() {
           <ProfilePhoto
             src={profile.photoUrl}
             name={profile.firstName}
-            className="aspect-[4/3] w-full rounded-lg"
+            className="mx-auto aspect-square w-full max-w-sm rounded-lg"
             iconSize={42}
           />
           <div className="mt-5 flex flex-wrap gap-2">
@@ -435,7 +435,7 @@ function ProfileCard({ profile }) {
     <a href={profileHref} className="premium-card flex h-full flex-col overflow-hidden p-5 sm:p-6">
       <div className="flex items-start justify-between gap-4">
         <div className="flex min-w-0 gap-3">
-          <ProfilePhoto src={profile.photoUrl} name={profile.firstName} className="h-12 w-12 shrink-0 rounded-lg" />
+          <ProfilePhoto src={profile.photoUrl} name={profile.firstName} className="h-12 w-12 shrink-0 rounded-full" />
           <div className="min-w-0">
             <h2 className="truncate text-xl font-semibold leading-tight text-conecly-ink">{profile.firstName}</h2>
             <p className="mt-2 flex items-center gap-2 text-sm font-medium text-conecly-ink/58">
@@ -513,7 +513,7 @@ function ProfilePhoto({ src, name, className, iconSize = 20 }) {
       <img
         src={src}
         alt={name ? `${name} profile` : ""}
-        className={`${className} object-cover`}
+        className={`${className} object-cover object-[50%_35%]`}
         loading="lazy"
         onError={() => setImageFailed(true)}
       />
@@ -532,7 +532,7 @@ function ProfileDetailLoading() {
     <ProfileDetailShell>
       <div className="grid gap-6 lg:grid-cols-[0.85fr_1.15fr]">
         <div className="rounded-lg border border-conecly-ink/10 bg-white p-4 shadow-line sm:p-5">
-          <div className="aspect-[4/3] animate-pulse rounded-lg bg-conecly-ink/8" />
+          <div className="mx-auto aspect-square w-full max-w-sm animate-pulse rounded-lg bg-conecly-ink/8" />
           <div className="mt-5 flex gap-2">
             <div className="h-8 w-24 animate-pulse rounded-lg bg-conecly-mist" />
             <div className="h-8 w-32 animate-pulse rounded-lg bg-conecly-mist" />

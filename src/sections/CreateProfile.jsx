@@ -8,15 +8,10 @@ const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
 const MAX_ORIGINAL_IMAGE_BYTES = 8 * 1024 * 1024;
 const MAX_IMAGE_EDGE = 1200;
 const JPEG_QUALITY = 0.82;
-const CROP_ASPECTS = [
-  { label: "Square", value: "square", ratio: 1 },
-  { label: "Portrait", value: "portrait", ratio: 4 / 5 },
-];
 const DEFAULT_CROP = {
-  zoom: 1,
+  zoom: 1.08,
   x: 50,
-  y: 50,
-  aspect: "square",
+  y: 35,
 };
 
 const PROFILE_INTENTS = [
@@ -89,16 +84,16 @@ export default function CreateProfile() {
     setSourcePhotoUrl(nextSourceUrl);
     setCropSettings(DEFAULT_CROP);
     setPhotoStatus("cropping");
-    setPhotoMessage("Position your photo, then use it when it looks right.");
+    setPhotoMessage("Center your face, then use the photo when it looks right.");
   }
 
-  async function cropSelectedPhoto() {
+  async function useEditedPhoto() {
     if (!sourcePhotoFile) {
       return;
     }
 
     setPhotoStatus("processing");
-    setPhotoMessage("Cropping photo...");
+    setPhotoMessage("Preparing photo...");
 
     try {
       const croppedPhoto = await cropProfilePhoto(sourcePhotoFile, cropSettings);
@@ -110,8 +105,8 @@ export default function CreateProfile() {
 
       setPhotoFile(croppedPhoto);
       setPhotoPreviewUrl(nextPreviewUrl);
-      setPhotoStatus("cropped");
-      setPhotoMessage("Cropped preview ready. Use photo to attach it to your profile.");
+      setPhotoStatus("ready");
+      setPhotoMessage("Photo ready to upload.");
     } catch (error) {
       console.error("[CreateProfile] Unable to crop profile photo", error);
       setPhotoFile(null);
@@ -126,15 +121,6 @@ export default function CreateProfile() {
       ...current,
       [name]: value,
     }));
-  }
-
-  function useCroppedPhoto() {
-    if (!photoFile) {
-      return;
-    }
-
-    setPhotoStatus("ready");
-    setPhotoMessage("Cropped photo ready to upload.");
   }
 
   function clearPhoto() {
@@ -342,7 +328,7 @@ export default function CreateProfile() {
                       <Camera size={15} />
                       Take photo
                     </button>
-                    {photoFile && (
+                    {(photoFile || sourcePhotoFile) && (
                       <button
                         type="button"
                         onClick={clearPhoto}
@@ -361,10 +347,8 @@ export default function CreateProfile() {
                   previewUrl={photoPreviewUrl}
                   cropSettings={cropSettings}
                   isProcessing={photoStatus === "processing"}
-                  hasCroppedPhoto={Boolean(photoFile)}
                   onChange={updateCropSetting}
-                  onCropPhoto={cropSelectedPhoto}
-                  onUsePhoto={useCroppedPhoto}
+                  onUsePhoto={useEditedPhoto}
                   onChangePhoto={() => galleryInputRef.current?.click()}
                   onRemovePhoto={clearPhoto}
                 />
@@ -397,16 +381,18 @@ export default function CreateProfile() {
 
           <button
             type="submit"
-            disabled={isSubmitting || photoStatus === "uploading" || photoStatus === "processing"}
+            disabled={isSubmitting || photoStatus === "cropping" || photoStatus === "uploading" || photoStatus === "processing"}
             className="inline-flex items-center justify-center gap-2 rounded-lg bg-conecly-forest px-6 py-4 font-semibold text-white shadow-soft transition hover:bg-conecly-teal disabled:cursor-not-allowed disabled:opacity-65 sm:col-span-2"
           >
             {photoStatus === "uploading"
               ? "Uploading photo..."
               : photoStatus === "processing"
-                ? "Cropping photo..."
-                : isSubmitting
-                  ? "Creating profile..."
-                  : "Create profile"}
+                ? "Preparing photo..."
+                : photoStatus === "cropping"
+                  ? "Use this photo first"
+                  : isSubmitting
+                    ? "Creating profile..."
+                    : "Create profile"}
             <ArrowRight size={17} />
           </button>
 
@@ -444,56 +430,79 @@ function PhotoCropper({
   previewUrl,
   cropSettings,
   isProcessing,
-  hasCroppedPhoto,
   onChange,
-  onCropPhoto,
   onUsePhoto,
   onChangePhoto,
   onRemovePhoto,
 }) {
-  const aspect = getCropAspect(cropSettings.aspect);
+  const dragState = useRef(null);
+
+  function startDrag(event) {
+    dragState.current = {
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      startY: event.clientY,
+      cropX: cropSettings.x,
+      cropY: cropSettings.y,
+    };
+    event.currentTarget.setPointerCapture(event.pointerId);
+  }
+
+  function dragPhoto(event) {
+    if (!dragState.current) {
+      return;
+    }
+
+    const nextX = clamp(dragState.current.cropX - (event.clientX - dragState.current.startX) / 2.8, 0, 100);
+    const nextY = clamp(dragState.current.cropY - (event.clientY - dragState.current.startY) / 2.8, 0, 100);
+    onChange("x", Math.round(nextX));
+    onChange("y", Math.round(nextY));
+  }
+
+  function endDrag(event) {
+    if (dragState.current?.pointerId === event.pointerId) {
+      dragState.current = null;
+    }
+  }
 
   return (
     <div className="mt-4 grid gap-4 rounded-lg border border-conecly-ink/10 bg-white p-3 sm:p-4">
-      <div className="grid gap-4 md:grid-cols-[1fr_12rem] md:items-start">
-        <div>
+      <div className="grid gap-4 md:grid-cols-[1fr_11rem] md:items-start">
+        <div className="grid gap-3">
           <div
-            className="relative mx-auto w-full max-w-sm overflow-hidden rounded-lg bg-conecly-ink shadow-line"
-            style={{ aspectRatio: aspect.ratio }}
+            className="relative mx-auto aspect-square w-full max-w-sm touch-none overflow-hidden rounded-lg bg-conecly-ink shadow-line"
+            onPointerDown={startDrag}
+            onPointerMove={dragPhoto}
+            onPointerUp={endDrag}
+            onPointerCancel={endDrag}
           >
             <img
               src={sourceUrl}
               alt="Crop photo preview"
-              className="h-full w-full object-cover"
+              className="h-full w-full select-none object-cover"
+              draggable="false"
               style={{
                 objectPosition: `${cropSettings.x}% ${cropSettings.y}%`,
                 transform: `scale(${cropSettings.zoom})`,
               }}
             />
             <div className="pointer-events-none absolute inset-0 ring-2 ring-inset ring-white/80" />
+            <div className="pointer-events-none absolute inset-[8%] rounded-full border-2 border-white/75 shadow-[0_0_0_999px_rgba(20,35,33,0.2)]" />
           </div>
-          <div className="mt-3 flex flex-wrap gap-2">
-            {CROP_ASPECTS.map((option) => (
-              <button
-                key={option.value}
-                type="button"
-                onClick={() => onChange("aspect", option.value)}
-                className={`rounded-lg border px-3 py-2 text-sm font-semibold transition ${
-                  cropSettings.aspect === option.value
-                    ? "border-conecly-teal bg-conecly-mist text-conecly-teal"
-                    : "border-conecly-ink/10 text-conecly-ink/68 hover:border-conecly-teal/30 hover:text-conecly-teal"
-                }`}
-              >
-                {option.label}
-              </button>
-            ))}
-          </div>
+          <RangeField
+            label="Zoom"
+            min="1"
+            max="1.8"
+            step="0.03"
+            value={cropSettings.zoom}
+            onChange={(value) => onChange("zoom", Number(value))}
+          />
         </div>
 
         <div className="grid gap-3">
           <div className="overflow-hidden rounded-lg border border-conecly-ink/10 bg-conecly-paper p-3">
             <p className="mb-2 text-xs font-semibold uppercase text-conecly-ink/45">Profile preview</p>
-            <div className="mx-auto flex h-28 w-28 items-center justify-center overflow-hidden rounded-lg bg-white text-conecly-teal shadow-line">
+            <div className="mx-auto flex h-28 w-28 items-center justify-center overflow-hidden rounded-full bg-white text-conecly-teal shadow-line">
               {previewUrl ? (
                 <img src={previewUrl} alt="Cropped profile preview" className="h-full w-full object-cover" />
               ) : (
@@ -512,49 +521,14 @@ function PhotoCropper({
         </div>
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-3">
-        <RangeField
-          label="Zoom"
-          min="1"
-          max="2.4"
-          step="0.05"
-          value={cropSettings.zoom}
-          onChange={(value) => onChange("zoom", Number(value))}
-        />
-        <RangeField
-          label="Left / right"
-          min="0"
-          max="100"
-          step="1"
-          value={cropSettings.x}
-          onChange={(value) => onChange("x", Number(value))}
-        />
-        <RangeField
-          label="Up / down"
-          min="0"
-          max="100"
-          step="1"
-          value={cropSettings.y}
-          onChange={(value) => onChange("y", Number(value))}
-        />
-      </div>
-
       <div className="flex flex-wrap gap-2">
         <button
           type="button"
-          onClick={onCropPhoto}
+          onClick={onUsePhoto}
           disabled={isProcessing}
           className="inline-flex items-center justify-center rounded-lg bg-conecly-forest px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-conecly-teal disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {isProcessing ? "Cropping..." : "Crop photo"}
-        </button>
-        <button
-          type="button"
-          onClick={onUsePhoto}
-          disabled={!hasCroppedPhoto || isProcessing}
-          className="inline-flex items-center justify-center rounded-lg border border-conecly-teal bg-conecly-mist px-4 py-2.5 text-sm font-semibold text-conecly-teal transition hover:border-conecly-teal disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          Use photo
+          {isProcessing ? "Preparing..." : "Use this photo"}
         </button>
         <button
           type="button"
@@ -624,15 +598,14 @@ async function uploadProfilePhoto(supabase, file) {
 
 async function cropProfilePhoto(file, cropSettings) {
   const image = await loadImage(file);
-  const aspect = getCropAspect(cropSettings.aspect);
-  const cropWidth = Math.round(Math.min(image.width, image.height * aspect.ratio) / cropSettings.zoom);
-  const cropHeight = Math.round(cropWidth / aspect.ratio);
+  const cropWidth = Math.round(Math.min(image.width, image.height) / cropSettings.zoom);
+  const cropHeight = cropWidth;
   const maxSourceX = Math.max(0, image.width - cropWidth);
   const maxSourceY = Math.max(0, image.height - cropHeight);
   const sourceX = Math.round((maxSourceX * cropSettings.x) / 100);
   const sourceY = Math.round((maxSourceY * cropSettings.y) / 100);
-  const outputWidth = aspect.value === "portrait" ? 960 : 900;
-  const outputHeight = Math.round(outputWidth / aspect.ratio);
+  const outputWidth = 900;
+  const outputHeight = 900;
 
   const canvas = document.createElement("canvas");
   canvas.width = outputWidth;
@@ -662,14 +635,14 @@ async function cropProfilePhoto(file, cropSettings) {
   });
 }
 
-function getCropAspect(value) {
-  return CROP_ASPECTS.find((option) => option.value === value) ?? CROP_ASPECTS[0];
-}
-
 function getCroppedFileName(name = "profile-photo") {
   const baseName = name.replace(/\.[^.]+$/, "") || "profile-photo";
 
   return `${baseName}-cropped.jpg`;
+}
+
+function clamp(value, min, max) {
+  return Math.min(max, Math.max(min, value));
 }
 
 async function prepareProfilePhoto(file) {
