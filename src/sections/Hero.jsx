@@ -37,8 +37,8 @@ export default function Hero() {
             <dd className="mt-1 text-sm leading-5 text-conecly-ink/56">Useful local radius</dd>
           </div>
           <div className="sm:border-r sm:border-conecly-ink/10 sm:px-5">
-            <dt className="text-2xl font-semibold text-conecly-ink">6</dt>
-            <dd className="mt-1 text-sm leading-5 text-conecly-ink/58">Opening types</dd>
+            <dt className="text-2xl font-semibold text-conecly-ink">7</dt>
+            <dd className="mt-1 text-sm leading-5 text-conecly-ink/58">Local use cases</dd>
           </div>
           <div className="sm:pl-5">
             <dt className="text-2xl font-semibold text-conecly-ink">1</dt>

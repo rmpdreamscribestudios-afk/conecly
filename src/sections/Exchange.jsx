@@ -1,4 +1,4 @@
-import { Check, Sparkles } from "lucide-react";
+import { Check, CircleDollarSign, HandCoins, Sparkles } from "lucide-react";
 import { exchangeItems, nearbyOpenings } from "../data";
 
 export default function Exchange() {
@@ -24,14 +24,33 @@ export default function Exchange() {
             ))}
           </div>
         </div>
-        <div className="rounded-lg bg-conecly-forest p-4 text-white shadow-lift sm:p-7">
-          <div className="rounded-lg bg-white/10 p-5 ring-1 ring-white/15 sm:p-7">
+        <div className="relative overflow-hidden rounded-lg bg-conecly-forest p-4 text-white shadow-lift sm:p-7">
+          <div className="absolute inset-0 opacity-45">
+            <svg className="h-full w-full" viewBox="0 0 560 560" fill="none" aria-hidden="true">
+              <path d="M58 414C156 278 248 372 342 190C404 70 464 89 524 118" stroke="#8FB99F" strokeOpacity="0.42" strokeWidth="2" />
+              <path d="M20 170C128 225 204 174 282 274C365 382 454 319 540 382" stroke="#D99D44" strokeOpacity="0.42" strokeWidth="2" />
+              <path d="M96 520L212 36M300 542L404 44M454 520L534 180" stroke="#FAF7F0" strokeOpacity="0.08" />
+            </svg>
+          </div>
+          <div className="relative rounded-lg bg-white/10 p-5 ring-1 ring-white/15 sm:p-7">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="text-sm font-medium text-white/68">Nearby today</p>
-                <h3 className="mt-2 text-2xl font-semibold leading-tight">6 openings within 2 km</h3>
+                <h3 className="mt-2 text-2xl font-semibold leading-tight">6 useful openings within 2 km</h3>
               </div>
               <Sparkles className="text-conecly-amber" size={26} />
+            </div>
+            <div className="mt-7 grid gap-3 sm:grid-cols-2">
+              <div className="rounded-lg border border-white/12 bg-white/10 p-4">
+                <CircleDollarSign size={22} className="text-conecly-amber" />
+                <p className="mt-3 text-sm font-medium text-white/64">Paid</p>
+                <p className="mt-1 text-lg font-semibold">Jobs and gigs</p>
+              </div>
+              <div className="rounded-lg border border-white/12 bg-white/10 p-4">
+                <HandCoins size={22} className="text-conecly-amber" />
+                <p className="mt-3 text-sm font-medium text-white/64">Shared value</p>
+                <p className="mt-1 text-lg font-semibold">Barter and support</p>
+              </div>
             </div>
             <div className="mt-7 space-y-3">
               {nearbyOpenings.map(([title, detail, distance]) => (
