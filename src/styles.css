@@ -27,7 +27,9 @@ body {
 }
 
 button,
-input {
+input,
+select,
+textarea {
   font: inherit;
 }
 
@@ -59,5 +61,9 @@ input {
 
   .eyebrow {
     @apply text-xs font-semibold uppercase text-conecly-emerald;
+  }
+
+  .form-field {
+    @apply w-full rounded-lg border border-conecly-ink/10 bg-white px-4 py-3.5 font-normal text-conecly-ink outline-none transition placeholder:text-conecly-ink placeholder:opacity-40 focus:border-conecly-teal/45 focus:ring-4 focus:ring-conecly-teal/10;
   }
 }

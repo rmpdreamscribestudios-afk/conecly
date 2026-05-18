@@ -16,9 +16,76 @@ import {
 
 export const navigation = [
   { label: "How it works", href: "#how" },
-  { label: "For locals", href: "#people" },
-  { label: "Exchange", href: "#exchange" },
+  { label: "Local opportunities", href: "#opportunities" },
+  { label: "Create profile", href: "#create-profile" },
   { label: "Waitlist", href: "#waitlist" },
+];
+
+export const serviceCategories = [
+  "Cleaning",
+  "Moving help",
+  "Tutoring",
+  "Caregiving",
+  "Nanny / childcare",
+  "Elder support",
+  "Pet care",
+  "Handyman",
+  "Snow removal",
+  "Yard work",
+  "Event help",
+  "Creative services",
+  "Other",
+];
+
+export const sampleProfiles = [
+  {
+    name: "Maya",
+    category: "Cleaning",
+    area: "Parkdale",
+    type: "Offer",
+    text: "Reliable apartment resets, move-out cleans, and weekly upkeep for nearby homes.",
+    contact: "Email Maya",
+  },
+  {
+    name: "Jon",
+    category: "Moving help",
+    area: "Roncesvalles",
+    type: "Request",
+    text: "Looking for one extra set of hands to move a desk and boxes this Saturday morning.",
+    contact: "Contact Jon",
+  },
+  {
+    name: "Ari",
+    category: "Tutoring",
+    area: "Little Italy",
+    type: "Offer",
+    text: "Patient math and science tutoring for middle school students after school or weekends.",
+    contact: "Email Ari",
+  },
+  {
+    name: "Nadia",
+    category: "Elder support",
+    area: "The Junction",
+    type: "Offer",
+    text: "Friendly check-ins, grocery walks, and light home support for older neighbours.",
+    contact: "Contact Nadia",
+  },
+  {
+    name: "Theo",
+    category: "Pet care",
+    area: "Leslieville",
+    type: "Request",
+    text: "Seeking occasional dog walks on long workdays from someone close by.",
+    contact: "Contact Theo",
+  },
+  {
+    name: "Sam",
+    category: "Creative services",
+    area: "Kensington",
+    type: "Offer",
+    text: "Simple poster, menu, and social graphics for local events and small businesses.",
+    contact: "Email Sam",
+  },
 ];
 
 export const steps = [
