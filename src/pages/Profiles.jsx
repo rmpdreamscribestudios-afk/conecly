@@ -1,8 +1,11 @@
 import {
   AlertCircle,
+  ArrowLeft,
   Clock3,
+  Image as ImageIcon,
   Mail,
   MapPin,
+  MessageCircle,
   Phone,
   RefreshCw,
   Search,
@@ -274,30 +277,157 @@ export default function Profiles({ headingLevel = "h1" }) {
         )}
 
         <div className="mt-8 rounded-lg border border-dashed border-conecly-ink/14 bg-white/60 p-5 text-sm leading-6 text-conecly-ink/62">
-          Dedicated profile detail pages are planned for <span className="font-semibold text-conecly-ink">/profiles/[id]</span>, so each card can become a fuller person page without making this directory noisy.
+          Open any profile to see the fuller public details shared by that neighbour.
         </div>
       </div>
     </section>
   );
 }
 
-export function ProfileDetailComingSoon() {
+export function ProfileDetail() {
+  const [profile, setProfile] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [notFound, setNotFound] = useState(false);
+  const profileId = getProfileIdFromPath();
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadProfile() {
+      setIsLoading(true);
+      setErrorMessage("");
+      setNotFound(false);
+
+      if (!profileId) {
+        setNotFound(true);
+        setIsLoading(false);
+        return;
+      }
+
+      if (!isSupabaseConfigured || !supabase) {
+        setErrorMessage(
+          `Supabase is not configured for public profile reads. Missing URL: ${!supabaseDiagnostics.hasUrl}. Missing anon key: ${!supabaseDiagnostics.hasAnonKey}.`,
+        );
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        const { data, error } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", profileId)
+          .maybeSingle();
+
+        if (error) {
+          throw error;
+        }
+
+        if (!isMounted) {
+          return;
+        }
+
+        if (!data) {
+          setProfile(null);
+          setNotFound(true);
+          return;
+        }
+
+        setProfile(mapProfile(data));
+      } catch (error) {
+        console.error("[ProfileDetail] Supabase profile read failed", error);
+
+        if (isMounted) {
+          setProfile(null);
+          setErrorMessage(formatSupabaseReadError(error));
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    }
+
+    loadProfile();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [profileId]);
+
+  if (isLoading) {
+    return <ProfileDetailLoading />;
+  }
+
+  if (notFound) {
+    return <ProfileDetailNotFound />;
+  }
+
+  if (errorMessage) {
+    return (
+      <ProfileDetailShell>
+        <div className="flex items-start gap-3 rounded-lg border border-conecly-clay/30 bg-white p-5 text-sm leading-6 text-conecly-ink shadow-line">
+          <AlertCircle size={19} className="mt-0.5 shrink-0 text-conecly-clay" />
+          <p>{errorMessage}</p>
+        </div>
+      </ProfileDetailShell>
+    );
+  }
+
+  if (!profile) {
+    return <ProfileDetailNotFound />;
+  }
+
+  const participation = getParticipationGroup(profile.participationType);
+  const ContactIcon = profile.contactMethod.toLowerCase().includes("phone") ? Phone : Mail;
+
   return (
-    <section className="bg-conecly-paper px-4 py-16 sm:px-8 lg:py-24">
-      <div className="mx-auto max-w-3xl rounded-lg border border-conecly-ink/10 bg-white p-8 shadow-line sm:p-10">
-        <p className="eyebrow">Profile detail</p>
-        <h1 className="mt-4 text-4xl font-semibold leading-tight text-conecly-ink sm:text-5xl">Profile pages are coming soon</h1>
-        <p className="mt-4 text-base leading-7 text-conecly-ink/66">
-          This route is reserved for the future <span className="font-semibold text-conecly-ink">/profiles/[id]</span> experience, where each person can have a more complete public profile.
-        </p>
-        <a
-          href="/profiles"
-          className="mt-7 inline-flex items-center justify-center rounded-lg bg-conecly-forest px-5 py-3 text-sm font-semibold text-white transition hover:bg-conecly-teal"
-        >
-          Back to profiles
-        </a>
+    <ProfileDetailShell>
+      <div className="grid gap-6 lg:grid-cols-[0.85fr_1.15fr] lg:items-start">
+        <div className="rounded-lg border border-conecly-ink/10 bg-white p-4 shadow-line sm:p-5">
+          {profile.photoUrl ? (
+            <img
+              src={profile.photoUrl}
+              alt={`${profile.firstName} profile`}
+              className="aspect-[4/3] w-full rounded-lg object-cover"
+            />
+          ) : (
+            <div className="flex aspect-[4/3] w-full items-center justify-center rounded-lg bg-conecly-mist text-conecly-teal">
+              <ImageIcon size={42} />
+            </div>
+          )}
+          <div className="mt-5 flex flex-wrap gap-2">
+            <span className={getParticipationClass(participation)}>{participation}</span>
+            <span className="inline-flex items-center gap-1.5 rounded-lg bg-conecly-mist px-3 py-1.5 text-sm font-semibold text-conecly-teal">
+              <Tag size={14} />
+              {profile.serviceCategory}
+            </span>
+          </div>
+        </div>
+
+        <article className="rounded-lg border border-conecly-ink/10 bg-white p-5 shadow-line sm:p-8">
+          <p className="eyebrow">Public profile</p>
+          <h1 className="mt-4 text-4xl font-semibold leading-tight text-conecly-ink sm:text-5xl">{profile.firstName}</h1>
+          <p className="mt-4 flex items-center gap-2 text-base font-medium text-conecly-ink/62">
+            <MapPin size={18} className="shrink-0 text-conecly-clay" />
+            <span>{[profile.city, profile.neighbourhood].filter(Boolean).join(" / ")}</span>
+          </p>
+
+          <div className="mt-7 border-t border-conecly-ink/8 pt-7">
+            <h2 className="text-sm font-semibold uppercase text-conecly-ink/45">Bio</h2>
+            <p className="mt-3 whitespace-pre-line text-base leading-8 text-conecly-ink/70">{profile.bio}</p>
+          </div>
+
+          <div className="mt-7 grid gap-4 sm:grid-cols-2">
+            <ProfileInfoCard label="Availability" value={profile.availability || "Ask directly"} icon={Clock3} />
+            <ProfileInfoCard label="Rate" value={profile.rate || "Shared on request"} icon={Sparkles} />
+            <ProfileInfoCard label="Contact method" value={profile.contactMethod || "Contact"} icon={ContactIcon} />
+            <ProfileInfoCard label="Contact details" value={profile.contactDetails || "Shared on request"} icon={MessageCircle} />
+          </div>
+        </article>
       </div>
-    </section>
+    </ProfileDetailShell>
   );
 }
 
@@ -307,14 +437,19 @@ function ProfileCard({ profile }) {
   const profileHref = profile.id ? `/profiles/${profile.id}` : "/profiles";
 
   return (
-    <article className="premium-card flex h-full flex-col overflow-hidden p-5 sm:p-6">
+    <a href={profileHref} className="premium-card flex h-full flex-col overflow-hidden p-5 sm:p-6">
       <div className="flex items-start justify-between gap-4">
-        <div className="min-w-0">
+        <div className="flex min-w-0 gap-3">
+          {profile.photoUrl ? (
+            <img src={profile.photoUrl} alt="" className="h-12 w-12 shrink-0 rounded-lg object-cover" />
+          ) : null}
+          <div className="min-w-0">
           <h2 className="truncate text-xl font-semibold leading-tight text-conecly-ink">{profile.firstName}</h2>
           <p className="mt-2 flex items-center gap-2 text-sm font-medium text-conecly-ink/58">
             <MapPin size={15} className="shrink-0 text-conecly-clay" />
             <span className="truncate">{[profile.city, profile.neighbourhood].filter(Boolean).join(" / ")}</span>
           </p>
+          </div>
         </div>
         <span className={getParticipationClass(participation)}>{participation}</span>
       </div>
@@ -343,23 +478,91 @@ function ProfileCard({ profile }) {
       <div className="mt-6 border-t border-conecly-ink/8 pt-5">
         <p className="text-xs font-semibold uppercase text-conecly-ink/45">Contact</p>
         <div className="mt-3 grid gap-3 text-sm text-conecly-ink/68">
-          <ProfileDetail value={profile.availability || "Ask directly"} icon={Clock3} />
-          <ProfileDetail value={profile.contactMethod || "Contact"} icon={ContactIcon} />
-          <ProfileDetail value={profile.contactDetails || "Shared on request"} icon={UserRound} />
+          <ProfileMetaLine value={profile.availability || "Ask directly"} icon={Clock3} />
+          <ProfileMetaLine value={profile.contactMethod || "Contact"} icon={ContactIcon} />
+          <ProfileMetaLine value={profile.contactDetails || "Shared on request"} icon={UserRound} />
         </div>
       </div>
 
-      <a
-        href={profileHref}
-        className="mt-6 inline-flex items-center justify-center rounded-lg border border-conecly-ink/10 px-4 py-3 text-sm font-semibold text-conecly-ink transition hover:border-conecly-teal/30 hover:text-conecly-teal"
-      >
+      <span className="mt-6 inline-flex items-center justify-center rounded-lg border border-conecly-ink/10 px-4 py-3 text-sm font-semibold text-conecly-ink transition hover:border-conecly-teal/30 hover:text-conecly-teal">
         View profile
-      </a>
-    </article>
+      </span>
+    </a>
   );
 }
 
-function ProfileDetail({ value, icon: Icon }) {
+function ProfileDetailShell({ children }) {
+  return (
+    <section className="bg-conecly-paper px-4 py-10 sm:px-8 sm:py-14 lg:py-18">
+      <div className="mx-auto max-w-5xl">
+        <a
+          href="/profiles"
+          className="mb-6 inline-flex items-center gap-2 rounded-lg border border-conecly-ink/10 bg-white px-4 py-2.5 text-sm font-semibold text-conecly-ink shadow-line transition hover:border-conecly-teal/30 hover:text-conecly-teal"
+        >
+          <ArrowLeft size={16} />
+          Back to profiles
+        </a>
+        {children}
+      </div>
+    </section>
+  );
+}
+
+function ProfileDetailLoading() {
+  return (
+    <ProfileDetailShell>
+      <div className="grid gap-6 lg:grid-cols-[0.85fr_1.15fr]">
+        <div className="rounded-lg border border-conecly-ink/10 bg-white p-4 shadow-line sm:p-5">
+          <div className="aspect-[4/3] animate-pulse rounded-lg bg-conecly-ink/8" />
+          <div className="mt-5 flex gap-2">
+            <div className="h-8 w-24 animate-pulse rounded-lg bg-conecly-mist" />
+            <div className="h-8 w-32 animate-pulse rounded-lg bg-conecly-mist" />
+          </div>
+        </div>
+        <div className="rounded-lg border border-conecly-ink/10 bg-white p-5 shadow-line sm:p-8">
+          <div className="h-4 w-28 animate-pulse rounded bg-conecly-ink/8" />
+          <div className="mt-5 h-12 w-2/3 animate-pulse rounded bg-conecly-ink/10" />
+          <div className="mt-5 h-5 w-1/2 animate-pulse rounded bg-conecly-ink/8" />
+          <div className="mt-8 space-y-3">
+            <div className="h-4 animate-pulse rounded bg-conecly-ink/8" />
+            <div className="h-4 animate-pulse rounded bg-conecly-ink/8" />
+            <div className="h-4 w-3/4 animate-pulse rounded bg-conecly-ink/8" />
+          </div>
+        </div>
+      </div>
+    </ProfileDetailShell>
+  );
+}
+
+function ProfileDetailNotFound() {
+  return (
+    <ProfileDetailShell>
+      <div className="rounded-lg border border-conecly-ink/10 bg-white p-8 text-center shadow-line sm:p-10">
+        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-lg bg-conecly-mist text-conecly-teal">
+          <Search size={22} />
+        </div>
+        <h1 className="mt-5 text-3xl font-semibold text-conecly-ink sm:text-4xl">Profile not found</h1>
+        <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-conecly-ink/62">
+          This profile may have been removed, or the link may not match a public profile in the directory.
+        </p>
+      </div>
+    </ProfileDetailShell>
+  );
+}
+
+function ProfileInfoCard({ label, value, icon: Icon }) {
+  return (
+    <div className="rounded-lg border border-conecly-ink/10 bg-conecly-paper p-4">
+      <div className="flex items-center gap-2 text-xs font-semibold uppercase text-conecly-ink/48">
+        <Icon size={16} className="text-conecly-emerald" />
+        {label}
+      </div>
+      <p className="mt-2 break-words text-sm leading-6 text-conecly-ink/72">{value}</p>
+    </div>
+  );
+}
+
+function ProfileMetaLine({ value, icon: Icon }) {
   return (
     <div className="flex items-start gap-2">
       <Icon size={16} className="mt-0.5 shrink-0 text-conecly-emerald" />
@@ -461,7 +664,14 @@ function mapProfile(profile) {
     rate: profile.rate || "",
     contactMethod: profile.contact_method || "Contact",
     contactDetails: profile.contact_details || profile.contact_value || profile.email || profile.phone || "",
+    photoUrl: profile.photo_url || profile.photoUrl || profile.image_url || profile.avatar_url || "",
   };
+}
+
+function getProfileIdFromPath() {
+  const [, id] = window.location.pathname.match(/^\/profiles\/([^/?#]+)/) ?? [];
+
+  return id ? decodeURIComponent(id) : "";
 }
 
 function getParticipationGroup(value = "") {

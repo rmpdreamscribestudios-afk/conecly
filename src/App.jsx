@@ -9,7 +9,7 @@ import Exchange from "./sections/Exchange";
 import Hero from "./sections/Hero";
 import HowItWorks from "./sections/HowItWorks";
 import LocalOpportunities from "./sections/LocalOpportunities";
-import Profiles, { ProfileDetailComingSoon } from "./pages/Profiles";
+import Profiles, { ProfileDetail } from "./pages/Profiles";
 import Waitlist from "./sections/Waitlist";
 import WhoFor from "./sections/WhoFor";
 
@@ -26,7 +26,7 @@ export default function App() {
       <Header />
       <main>
         {isProfileDetailPage ? (
-          <ProfileDetailComingSoon />
+          <ProfileDetail />
         ) : isAboutPage ? (
           <About />
         ) : isPrivacyPolicyPage ? (
