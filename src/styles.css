@@ -1,0 +1,63 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color: #142321;
+  background: #faf7f0;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  min-width: 320px;
+  margin: 0;
+  overflow-x: hidden;
+  background:
+    linear-gradient(90deg, rgba(20, 35, 33, 0.035) 1px, transparent 1px),
+    linear-gradient(180deg, rgba(20, 35, 33, 0.03) 1px, transparent 1px),
+    #fcfbf7;
+  background-size: 72px 72px, 72px 72px, auto;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+::selection {
+  background: rgba(217, 157, 68, 0.35);
+}
+
+@layer components {
+  .section-pad {
+    @apply py-20 sm:py-28 lg:py-36;
+  }
+
+  .section-frame {
+    @apply relative overflow-hidden border-y border-conecly-ink/10;
+  }
+
+  .section-frame::before {
+    content: "";
+    @apply pointer-events-none absolute inset-x-0 top-0 h-px bg-white/80;
+  }
+
+  .premium-card {
+    @apply rounded-lg border border-conecly-ink/10 bg-white shadow-line transition duration-300;
+  }
+
+  .premium-card:hover {
+    @apply -translate-y-1 border-conecly-teal/25 shadow-soft;
+  }
+
+  .eyebrow {
+    @apply text-xs font-semibold uppercase text-conecly-emerald;
+  }
+}
