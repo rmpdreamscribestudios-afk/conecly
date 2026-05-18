@@ -4,6 +4,20 @@ const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 export const isSupabaseConfigured = Boolean(supabaseUrl && supabaseAnonKey);
+export const supabaseDiagnostics = {
+  hasUrl: Boolean(supabaseUrl),
+  hasAnonKey: Boolean(supabaseAnonKey),
+  url: supabaseUrl || "",
+};
+
+if (!isSupabaseConfigured) {
+  console.error("[Supabase] Missing browser environment variables", {
+    hasUrl: Boolean(supabaseUrl),
+    hasAnonKey: Boolean(supabaseAnonKey),
+    expectedUrlVariable: "VITE_SUPABASE_URL",
+    expectedAnonKeyVariable: "VITE_SUPABASE_ANON_KEY",
+  });
+}
 
 export const supabase = isSupabaseConfigured
   ? createClient(supabaseUrl, supabaseAnonKey, {

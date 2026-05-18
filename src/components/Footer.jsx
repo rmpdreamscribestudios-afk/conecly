@@ -8,7 +8,7 @@ export default function Footer() {
         <div>
           <Logo />
           <p className="mt-3 max-w-md text-sm leading-6 text-conecly-ink/60">
-            A local participation platform for discovering what and who is nearby.
+            A calm place to find trusted local help and connect with people nearby.
           </p>
         </div>
         <div className="flex flex-wrap gap-5 text-sm font-medium text-conecly-ink/62">

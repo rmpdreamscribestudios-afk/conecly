@@ -90,18 +90,18 @@ export const sampleProfiles = [
 
 export const steps = [
   {
-    title: "Set your local radius",
-    text: "Choose the neighborhoods and nearby places that actually shape your day.",
+    title: "Choose your area",
+    text: "Tell CONECLY where nearby means for you.",
     icon: MapPin,
   },
   {
-    title: "Discover what is open",
-    text: "See invitations, skills, events, requests, and local exchanges gathered into one living feed.",
+    title: "Find local help",
+    text: "See offers, requests, small jobs, and community support close to home.",
     icon: Search,
   },
   {
-    title: "Connect with context",
-    text: "Reach out with a shared purpose, a gentle introduction, and fewer awkward cold starts.",
+    title: "Reach out simply",
+    text: "Start with a clear need, a kind message, and a reason to connect.",
     icon: MessageCircle,
   },
 ];
@@ -109,17 +109,17 @@ export const steps = [
 export const audiences = [
   {
     title: "People new to a place",
-    text: "Find welcoming first steps, useful nearby groups, and people who make a city feel more knowable.",
+    text: "Find friendly first steps, useful local groups, and people who make a place feel familiar.",
     icon: Compass,
   },
   {
     title: "Local makers and helpers",
-    text: "Share skills, small services, resources, and invitations without needing to become a brand.",
+    text: "Share skills, small services, tools, and invitations in a simple, personal way.",
     icon: Sprout,
   },
   {
     title: "Community organizers",
-    text: "Surface gatherings, calls for help, and recurring opportunities with a calm, trusted presence.",
+    text: "Share gatherings, calls for help, and regular ways for neighbours to show up.",
     icon: HeartHandshake,
   },
 ];
@@ -156,14 +156,14 @@ export const localOpportunities = [
   },
   {
     title: "Cleaning jobs",
-    text: "Trusted home, rental, and event resets with clear expectations before anyone arrives.",
+    text: "Trusted help for homes, rentals, events, and the cleanups that make life easier.",
     icon: Paintbrush,
     accent: "amber",
     tags: ["Homes", "Turnovers"],
   },
   {
     title: "Moving help",
-    text: "Find extra hands for lifts, packing, small moves, and the awkward parts of transition.",
+    text: "Find extra hands for lifting, packing, small moves, and getting settled.",
     icon: PackageCheck,
     accent: "clay",
     tags: ["Lifting", "Packing"],
@@ -177,14 +177,14 @@ export const localOpportunities = [
   },
   {
     title: "Local gigs",
-    text: "Short, useful jobs for hosts, makers, students, freelancers, and neighborhood teams.",
+    text: "Short, useful jobs for hosts, makers, students, freelancers, and neighbourhood teams.",
     icon: BriefcaseBusiness,
     accent: "emerald",
     tags: ["Shifts", "Projects"],
   },
   {
     title: "Community support",
-    text: "Mutual aid, volunteer calls, elder check-ins, group rides, and neighbor-to-neighbor care.",
+    text: "Mutual aid, volunteer calls, elder check-ins, group rides, and neighbour-to-neighbour care.",
     icon: HeartHandshake,
     accent: "forest",
     tags: ["Mutual aid", "Care"],
@@ -193,18 +193,18 @@ export const localOpportunities = [
 
 export const supportSignals = [
   {
-    title: "Verified intent",
-    text: "Requests frame the need, neighborhood, timing, and expected exchange before people connect.",
+    title: "Clear requests",
+    text: "Each request explains the need, place, timing, and what kind of help is wanted.",
     icon: ShieldCheck,
   },
   {
-    title: "Human context",
-    text: "Profiles and local circles make support feel less anonymous and more accountable.",
+    title: "Real people",
+    text: "Profiles help support feel personal, respectful, and easier to trust.",
     icon: UsersRound,
   },
   {
-    title: "Opportunity exchange",
-    text: "Money, barter, volunteering, lending, and shared projects can sit in one calm local layer.",
+    title: "Different ways to help",
+    text: "Paid work, volunteering, lending, and shared projects can all live side by side.",
     icon: Sprout,
   },
 ];

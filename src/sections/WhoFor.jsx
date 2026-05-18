@@ -17,11 +17,11 @@ export default function WhoFor() {
           <div>
             <p className="eyebrow">Who it is for</p>
             <h2 className="mt-4 text-[2rem] font-semibold leading-[1.08] text-conecly-ink sm:text-5xl">
-              For people who want local life to feel easier to enter.
+              For people who want to feel more connected nearby.
             </h2>
           </div>
           <p className="max-w-3xl text-lg leading-8 text-conecly-ink/64 lg:justify-self-end">
-            Not another noisy feed. CONECLY is for the small, specific moments that make a place feel alive: an invitation, a useful skill, a neighbor with time, a group that needs one more person.
+            CONECLY is for everyday moments that make a place feel welcoming: a neighbour with time, a helpful skill, a small job, or someone who needs one more hand.
           </p>
         </div>
         <div className="mt-12 grid gap-4 md:grid-cols-3">

@@ -1,7 +1,7 @@
 import { ArrowRight, Camera, CheckCircle2 } from "lucide-react";
 import { useState } from "react";
 import { serviceCategories } from "../data";
-import { getSupabaseClient } from "../lib/supabase";
+import { getSupabaseClient, isSupabaseConfigured, supabaseDiagnostics } from "../lib/supabase";
 
 const PROFILE_INTENTS = [
   ["Offer help", "I want to Offer help/services"],
@@ -18,7 +18,9 @@ const CONTACT_METHODS = [
 export default function CreateProfile() {
   const [submitted, setSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isTestingInsert, setIsTestingInsert] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
 
   async function handleSubmit(event) {
     event.preventDefault();
@@ -54,28 +56,114 @@ export default function CreateProfile() {
 
     setIsSubmitting(true);
     setErrorMessage("");
+    setSuccessMessage("");
+    setSubmitted(false);
+
+    if (!isSupabaseConfigured) {
+      const message =
+        "Supabase is missing VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY in the browser build.";
+      console.error("[CreateProfile] Missing Supabase env vars", supabaseDiagnostics);
+      setErrorMessage(message);
+      setIsSubmitting(false);
+      return;
+    }
 
     try {
       const supabase = getSupabaseClient();
-      const { error: profileError } = await supabase.from("profiles").insert(profile);
+      console.log("[CreateProfile] Submitting profile payload to Supabase profiles table", {
+        table: "profiles",
+        role: "anon",
+        env: supabaseDiagnostics,
+        payload: profile,
+      });
+
+      const profileResponse = await supabase.from("profiles").insert(profile);
+      console.log("[CreateProfile] Supabase profiles insert response", profileResponse);
+
+      const { error: profileError } = profileResponse;
 
       if (profileError) {
         throw profileError;
       }
 
-      const { error: opportunityError } = await supabase.from("opportunities").insert(opportunity);
+      const opportunityResponse = await supabase.from("opportunities").insert(opportunity);
+      console.log("[CreateProfile] Supabase opportunities insert response", opportunityResponse);
+
+      const { error: opportunityError } = opportunityResponse;
 
       if (opportunityError) {
         throw opportunityError;
       }
 
       setSubmitted(true);
+      setSuccessMessage("Your profile was written to Supabase successfully.");
       form.reset();
     } catch (error) {
-      console.error("Unable to submit profile form", error);
-      setErrorMessage("We could not submit this profile yet. Please check the Supabase settings and try again.");
+      const visibleError = formatSupabaseError(error);
+      console.error("[CreateProfile] Unable to submit profile form", {
+        error,
+        message: visibleError,
+      });
+      setErrorMessage(visibleError);
     } finally {
       setIsSubmitting(false);
+    }
+  }
+
+  async function handleTestInsert() {
+    setIsTestingInsert(true);
+    setErrorMessage("");
+    setSuccessMessage("");
+    setSubmitted(false);
+
+    const testProfile = {
+      first_name: "CONECLY Test",
+      location: "Supabase diagnostics",
+      intent: "Offer help",
+      category: "Other",
+      bio: `Temporary browser test insert from CONECLY at ${new Date().toISOString()}`,
+      contact_method: "Email",
+      contact_value: "test@example.com",
+      availability: "Temporary diagnostic row",
+      rate: "Test",
+      photo_link: "",
+    };
+
+    if (!isSupabaseConfigured) {
+      const message =
+        "Supabase is missing VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY in the browser build.";
+      console.error("[CreateProfile:test] Missing Supabase env vars", supabaseDiagnostics);
+      setErrorMessage(message);
+      setIsTestingInsert(false);
+      return;
+    }
+
+    try {
+      const supabase = getSupabaseClient();
+      console.log("[CreateProfile:test] Inserting hardcoded profile into Supabase profiles table", {
+        table: "profiles",
+        role: "anon",
+        env: supabaseDiagnostics,
+        payload: testProfile,
+      });
+
+      const testResponse = await supabase.from("profiles").insert(testProfile);
+      console.log("[CreateProfile:test] Supabase profiles test insert response", testResponse);
+
+      if (testResponse.error) {
+        throw testResponse.error;
+      }
+
+      setSuccessMessage("Supabase test insert succeeded. Check Table Editor -> profiles for CONECLY Test.");
+    } catch (error) {
+      const visibleError = formatSupabaseError(error);
+      console.error("[CreateProfile:test] Supabase test insert failed", {
+        error,
+        message: visibleError,
+      });
+      setErrorMessage(visibleError);
+    } finally {
+      setIsTestingInsert(false);
     }
   }
 
@@ -88,12 +176,12 @@ export default function CreateProfile() {
             Share what you can offer, or what you need nearby.
           </h2>
           <p className="mt-6 max-w-2xl text-lg leading-8 text-conecly-ink/64">
-            This MVP keeps participation simple: a public profile, one clear category, and a contact method people can use outside CONECLY.
+            Make a simple public profile so neighbours can understand what you do, what you need, and how to reach you.
           </p>
           <div className="mt-8 rounded-lg border border-conecly-ink/10 bg-conecly-paper p-5 shadow-line">
-            <p className="text-sm font-semibold text-conecly-ink">Community intake</p>
+            <p className="text-sm font-semibold text-conecly-ink">Community profile</p>
             <p className="mt-2 text-sm leading-6 text-conecly-ink/62">
-              Share a clear, grounded profile so neighbours can understand what you offer, what you need, and how to reach you.
+              A few honest details help people feel comfortable reaching out.
             </p>
           </div>
         </div>
@@ -159,8 +247,8 @@ export default function CreateProfile() {
                 <Camera size={20} />
               </div>
               <div>
-                <p className="text-sm font-semibold text-conecly-ink">Photo upload placeholder</p>
-                <p className="mt-1 text-sm leading-5 text-conecly-ink/56">Image uploads are not active in this MVP.</p>
+                <p className="text-sm font-semibold text-conecly-ink">Photo coming soon</p>
+                <p className="mt-1 text-sm leading-5 text-conecly-ink/56">For now, you can add an optional photo link below.</p>
               </div>
             </div>
           </div>
@@ -184,10 +272,19 @@ export default function CreateProfile() {
             <ArrowRight size={17} />
           </button>
 
-          {submitted && (
+          <button
+            type="button"
+            onClick={handleTestInsert}
+            disabled={isSubmitting || isTestingInsert}
+            className="inline-flex items-center justify-center gap-2 rounded-lg border border-conecly-ink/16 bg-white px-6 py-4 font-semibold text-conecly-ink shadow-line transition hover:border-conecly-teal hover:text-conecly-teal sm:col-span-2"
+          >
+            {isTestingInsert ? "Testing Supabase insert..." : "Run Supabase test insert"}
+          </button>
+
+          {(submitted || successMessage) && (
             <p className="flex items-start gap-2 rounded-lg bg-conecly-mist px-4 py-3 text-sm font-medium leading-6 text-conecly-teal sm:col-span-2">
               <CheckCircle2 size={18} className="mt-0.5 shrink-0" />
-              Your profile has been submitted. Thank you for helping shape CONECLY in your community.
+              {successMessage || "Your profile has been submitted. Thank you for helping shape CONECLY in your community."}
             </p>
           )}
 
@@ -208,6 +305,20 @@ function getOpportunityType(intent) {
   }
 
   return "Offer";
+}
+
+function formatSupabaseError(error) {
+  if (!error) {
+    return "Supabase returned an unknown error. Check the browser console for the raw insert response.";
+  }
+
+  const parts = [error.message, error.details, error.hint, error.code].filter(Boolean);
+
+  if (parts.length === 0) {
+    return "Supabase returned an error without a message. Check the browser console for the raw insert response.";
+  }
+
+  return `Supabase error: ${parts.join(" | ")}`;
 }
 
 function Field({ label, name, required = false, placeholder }) {

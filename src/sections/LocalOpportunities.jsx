@@ -52,7 +52,7 @@ export default function LocalOpportunities() {
       <div className="mx-auto max-w-7xl px-5 sm:px-8">
         <SectionHeader
           eyebrow="Local opportunities"
-          title="A public feed for nearby offers and requests."
+          title="Nearby offers and requests, all in one place."
           text="Browse simple profiles from people offering practical help or asking for a hand in the neighbourhood."
         />
         {isLoading && (
@@ -107,7 +107,7 @@ function mapOpportunityToProfile(opportunity) {
     category: opportunity.category || "Local help",
     area: opportunity.location || opportunity.area || opportunity.city || "Nearby",
     type,
-    text: opportunity.description || opportunity.bio || "A local opportunity shared by a CONECLY neighbour.",
+    text: opportunity.description || opportunity.bio || "A local offer or request shared by a CONECLY neighbour.",
     contact: `${contactVerb} ${name}`,
   };
 }

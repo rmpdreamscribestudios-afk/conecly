@@ -8,8 +8,8 @@ export default function HowItWorks() {
       <div className="mx-auto max-w-7xl px-5 sm:px-8">
         <SectionHeader
           eyebrow="How it works"
-          title="A clearer path from nearby to known."
-          text="CONECLY is built around proximity, intent, and gentle introductions, so local participation feels specific instead of noisy."
+          title="A simple way to meet local needs."
+          text="Share where you are, what you can offer, or what kind of help you need. CONECLY keeps it clear and close to home."
         />
         <HowItWorksVisual />
         <div className="mt-14 grid gap-4 md:grid-cols-3">

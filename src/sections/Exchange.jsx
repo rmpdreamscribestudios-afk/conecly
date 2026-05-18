@@ -7,12 +7,12 @@ export default function Exchange() {
     <section id="exchange" className="section-frame section-pad bg-white">
       <div className="mx-auto grid max-w-7xl gap-12 px-5 sm:px-8 lg:grid-cols-[1fr_0.95fr] lg:items-center">
         <div>
-          <p className="eyebrow">Local opportunity exchange</p>
+          <p className="eyebrow">Local help</p>
           <h2 className="mt-4 text-[2rem] font-semibold leading-[1.08] text-conecly-ink sm:text-5xl">
-            A shared place for what people can offer and what a community needs.
+            A shared place to offer help or ask for support.
           </h2>
           <p className="mt-6 max-w-2xl text-lg leading-8 text-conecly-ink/64">
-            CONECLY makes everyday local exchange easier to notice, easier to trust, and easier to begin.
+            Find cleaning, moving, tutoring, caregiving, and everyday support from people close by.
           </p>
           <div className="mt-8 grid grid-cols-1 gap-3 sm:grid-cols-2">
             {exchangeItems.map((item) => (

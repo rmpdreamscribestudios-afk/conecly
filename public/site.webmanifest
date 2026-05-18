@@ -1,7 +1,7 @@
 {
   "name": "CONECLY",
   "short_name": "CONECLY",
-  "description": "A modern local participation platform for discovering people, opportunities, skills, events, and exchange nearby.",
+  "description": "A calm place to find trusted local help, offer support, and connect with neighbours nearby.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#faf7f0",

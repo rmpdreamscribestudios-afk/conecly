@@ -8,14 +8,14 @@ export default function CommunityFlow() {
       <div className="mx-auto max-w-7xl px-5 sm:px-8">
         <SectionHeader
           eyebrow="Community flow"
-          title="Designed for participation that keeps moving."
-          text="The platform helps local energy move from a quiet signal to a real connection, then back into the community."
+          title="Small asks can become real help."
+          text="CONECLY helps people move from a clear local need to a real connection, then back into a stronger community."
         />
         <div className="mt-14 grid gap-6 rounded-lg border border-conecly-ink/10 bg-white p-4 shadow-line lg:grid-cols-[0.98fr_1.02fr] lg:p-7">
           <div>
             <CommunitySupportVisual />
             <div className="mt-5 rounded-lg border border-conecly-ink/8 bg-conecly-paper p-5">
-              <p className="eyebrow">Trust layer</p>
+              <p className="eyebrow">Built on trust</p>
               <p className="mt-2 text-2xl font-semibold leading-tight text-conecly-ink">Clear asks become useful local action.</p>
             </div>
           </div>
