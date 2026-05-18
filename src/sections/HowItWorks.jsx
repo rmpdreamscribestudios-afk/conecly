@@ -1,4 +1,5 @@
 import SectionHeader from "../components/SectionHeader";
+import { HowItWorksVisual } from "../components/Illustrations";
 import { steps } from "../data";
 
 export default function HowItWorks() {
@@ -10,6 +11,7 @@ export default function HowItWorks() {
           title="A clearer path from nearby to known."
           text="CONECLY is built around proximity, intent, and gentle introductions, so local participation feels specific instead of noisy."
         />
+        <HowItWorksVisual />
         <div className="mt-14 grid gap-4 md:grid-cols-3">
           {steps.map((step, index) => {
             const Icon = step.icon;

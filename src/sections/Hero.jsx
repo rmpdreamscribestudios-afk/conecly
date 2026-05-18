@@ -1,5 +1,5 @@
 import { ArrowRight, ChevronRight } from "lucide-react";
-import ConnectionVisual from "../components/ConnectionVisual";
+import { HeroServicesVisual } from "../components/Illustrations";
 
 export default function Hero() {
   return (
@@ -46,7 +46,7 @@ export default function Hero() {
           </div>
         </dl>
       </div>
-      <ConnectionVisual />
+      <HeroServicesVisual />
     </section>
   );
 }
