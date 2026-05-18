@@ -4,6 +4,22 @@
 alter table public.profiles
 add column if not exists photo_url text;
 
+alter table public.profiles enable row level security;
+
+drop policy if exists "Public can read profiles" on public.profiles;
+create policy "Public can read profiles"
+on public.profiles
+for select
+to anon, authenticated
+using (true);
+
+drop policy if exists "Public can create profiles" on public.profiles;
+create policy "Public can create profiles"
+on public.profiles
+for insert
+to anon, authenticated
+with check (true);
+
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 values (
   'profile-photos',
