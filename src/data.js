@@ -17,6 +17,7 @@ import {
 export const navigation = [
   { label: "How it works", href: "/#how" },
   { label: "About", href: "/about" },
+  { label: "Safety", href: "/safety" },
   { label: "Profiles", href: "/profiles" },
   { label: "Create profile", href: "/#create-profile" },
   { label: "Waitlist", href: "/#waitlist" },

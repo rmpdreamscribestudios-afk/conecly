@@ -1,6 +1,7 @@
 import Footer from "./components/Footer";
 import Header from "./components/Header";
 import About from "./pages/About";
+import Safety from "./pages/Safety";
 import CommunityFlow from "./sections/CommunityFlow";
 import CreateProfile from "./sections/CreateProfile";
 import Exchange from "./sections/Exchange";
@@ -14,6 +15,7 @@ import WhoFor from "./sections/WhoFor";
 export default function App() {
   const path = window.location.pathname;
   const isAboutPage = path === "/about";
+  const isSafetyPage = path === "/safety";
   const isProfilesPage = path === "/profiles";
   const isProfileDetailPage = path.startsWith("/profiles/");
 
@@ -25,6 +27,8 @@ export default function App() {
           <ProfileDetailComingSoon />
         ) : isAboutPage ? (
           <About />
+        ) : isSafetyPage ? (
+          <Safety />
         ) : isProfilesPage ? (
           <Profiles />
         ) : (
