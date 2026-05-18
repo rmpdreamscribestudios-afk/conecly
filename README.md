@@ -54,24 +54,37 @@ VITE_SUPABASE_ANON_KEY=your-publishable-anon-key
 
 Use the public anon/publishable key from Supabase, not a service role key. Because `VITE_` variables are bundled into the client, the database must be protected with Row Level Security policies.
 
-The frontend expects lightweight `profiles` and `opportunities` tables with these columns:
+The frontend expects lightweight `profiles` and `opportunities` tables. `profiles` receives the full private profile submission, and its insert payload must match these columns:
 
 ```text
 first_name
 location
 intent
-category
-bio / description
+bio
 contact_method
 contact_value
 availability
 rate
 photo_link
-type
 created_at
 ```
 
-`profiles` receives the full profile submission. `opportunities` receives the public feed row generated from the same form.
+`opportunities` receives the public feed row generated from the same form, including the selected category:
+
+```text
+first_name
+location
+intent
+type
+category
+description
+contact_method
+contact_value
+availability
+rate
+photo_link
+created_at
+```
 
 ## Project Structure
 

@@ -18,7 +18,6 @@ const CONTACT_METHODS = [
 export default function CreateProfile() {
   const [submitted, setSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isTestingInsert, setIsTestingInsert] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
@@ -27,11 +26,11 @@ export default function CreateProfile() {
 
     const form = event.currentTarget;
     const formData = new FormData(form);
+    const category = formData.get("category") ?? "";
     const profile = {
       first_name: formData.get("firstName")?.trim() ?? "",
       location: formData.get("location")?.trim() ?? "",
       intent: formData.get("intent") ?? "",
-      category: formData.get("category") ?? "",
       bio: formData.get("bio")?.trim() ?? "",
       contact_method: formData.get("contactMethod") ?? "",
       contact_value: formData.get("contactValue")?.trim() ?? "",
@@ -45,7 +44,7 @@ export default function CreateProfile() {
       location: profile.location,
       intent: profile.intent,
       type: getOpportunityType(profile.intent),
-      category: profile.category,
+      category,
       description: profile.bio,
       contact_method: profile.contact_method,
       contact_value: profile.contact_value,
@@ -107,63 +106,6 @@ export default function CreateProfile() {
       setErrorMessage(visibleError);
     } finally {
       setIsSubmitting(false);
-    }
-  }
-
-  async function handleTestInsert() {
-    setIsTestingInsert(true);
-    setErrorMessage("");
-    setSuccessMessage("");
-    setSubmitted(false);
-
-    const testProfile = {
-      first_name: "CONECLY Test",
-      location: "Supabase diagnostics",
-      intent: "Offer help",
-      category: "Other",
-      bio: `Temporary browser test insert from CONECLY at ${new Date().toISOString()}`,
-      contact_method: "Email",
-      contact_value: "test@example.com",
-      availability: "Temporary diagnostic row",
-      rate: "Test",
-      photo_link: "",
-    };
-
-    if (!isSupabaseConfigured) {
-      const message =
-        "Supabase is missing VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY in the browser build.";
-      console.error("[CreateProfile:test] Missing Supabase env vars", supabaseDiagnostics);
-      setErrorMessage(message);
-      setIsTestingInsert(false);
-      return;
-    }
-
-    try {
-      const supabase = getSupabaseClient();
-      console.log("[CreateProfile:test] Inserting hardcoded profile into Supabase profiles table", {
-        table: "profiles",
-        role: "anon",
-        env: supabaseDiagnostics,
-        payload: testProfile,
-      });
-
-      const testResponse = await supabase.from("profiles").insert(testProfile);
-      console.log("[CreateProfile:test] Supabase profiles test insert response", testResponse);
-
-      if (testResponse.error) {
-        throw testResponse.error;
-      }
-
-      setSuccessMessage("Supabase test insert succeeded. Check Table Editor -> profiles for CONECLY Test.");
-    } catch (error) {
-      const visibleError = formatSupabaseError(error);
-      console.error("[CreateProfile:test] Supabase test insert failed", {
-        error,
-        message: visibleError,
-      });
-      setErrorMessage(visibleError);
-    } finally {
-      setIsTestingInsert(false);
     }
   }
 
@@ -270,15 +212,6 @@ export default function CreateProfile() {
           >
             {isSubmitting ? "Creating profile..." : "Create profile"}
             <ArrowRight size={17} />
-          </button>
-
-          <button
-            type="button"
-            onClick={handleTestInsert}
-            disabled={isSubmitting || isTestingInsert}
-            className="inline-flex items-center justify-center gap-2 rounded-lg border border-conecly-ink/16 bg-white px-6 py-4 font-semibold text-conecly-ink shadow-line transition hover:border-conecly-teal hover:text-conecly-teal sm:col-span-2"
-          >
-            {isTestingInsert ? "Testing Supabase insert..." : "Run Supabase test insert"}
           </button>
 
           {(submitted || successMessage) && (
