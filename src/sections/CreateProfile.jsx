@@ -120,9 +120,15 @@ export default function CreateProfile() {
       if (photoFile) {
         setPhotoStatus("uploading");
         setPhotoMessage("Uploading photo...");
-        uploadedPhotoUrl = await uploadProfilePhoto(supabase, photoFile);
-        setPhotoStatus("success");
-        setPhotoMessage("Photo uploaded.");
+        try {
+          uploadedPhotoUrl = await uploadProfilePhoto(supabase, photoFile);
+          setPhotoStatus("success");
+          setPhotoMessage("Photo uploaded.");
+        } catch (photoError) {
+          console.error("[CreateProfile] Profile photo upload failed; submitting profile without a photo", photoError);
+          setPhotoStatus("failed");
+          setPhotoMessage("Photo upload failed, so your profile will be saved without a photo.");
+        }
       }
 
       const profileWithPhoto = {
@@ -137,16 +143,15 @@ export default function CreateProfile() {
       }
 
       setSubmitted(true);
-      setSuccessMessage("Your profile was written to Supabase successfully.");
+      setSuccessMessage(
+        photoFile && !uploadedPhotoUrl
+          ? "Your profile was saved, but the photo upload failed. You can try again later with another photo."
+          : "Your profile was written to Supabase successfully.",
+      );
       window.dispatchEvent(new CustomEvent("conecly:profile-created"));
       form.reset();
       clearPhoto();
     } catch (error) {
-      if (photoFile) {
-        setPhotoStatus("failed");
-        setPhotoMessage("Photo upload failed. You can try another photo or submit without one.");
-      }
-
       const visibleError = formatSupabaseError(error);
       console.error("[CreateProfile] Unable to submit profile form", {
         error,

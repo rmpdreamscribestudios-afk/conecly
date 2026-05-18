@@ -502,8 +502,22 @@ function ProfileDetailShell({ children }) {
 }
 
 function ProfilePhoto({ src, name, className, iconSize = 20 }) {
-  if (src) {
-    return <img src={src} alt={name ? `${name} profile` : ""} className={`${className} object-cover`} loading="lazy" />;
+  const [imageFailed, setImageFailed] = useState(false);
+
+  useEffect(() => {
+    setImageFailed(false);
+  }, [src]);
+
+  if (src && !imageFailed) {
+    return (
+      <img
+        src={src}
+        alt={name ? `${name} profile` : ""}
+        className={`${className} object-cover`}
+        loading="lazy"
+        onError={() => setImageFailed(true)}
+      />
+    );
   }
 
   return (

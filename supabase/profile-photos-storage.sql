@@ -1,6 +1,9 @@
 -- CONECLY profile photo storage setup.
 -- Run this in the Supabase SQL editor for the project used by VITE_SUPABASE_URL.
 
+alter table public.profiles
+add column if not exists photo_url text;
+
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 values (
   'profile-photos',
