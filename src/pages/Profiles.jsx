@@ -386,17 +386,12 @@ export function ProfileDetail() {
     <ProfileDetailShell>
       <div className="grid gap-6 lg:grid-cols-[0.85fr_1.15fr] lg:items-start">
         <div className="rounded-lg border border-conecly-ink/10 bg-white p-4 shadow-line sm:p-5">
-          {profile.photoUrl ? (
-            <img
-              src={profile.photoUrl}
-              alt={`${profile.firstName} profile`}
-              className="aspect-[4/3] w-full rounded-lg object-cover"
-            />
-          ) : (
-            <div className="flex aspect-[4/3] w-full items-center justify-center rounded-lg bg-conecly-mist text-conecly-teal">
-              <ImageIcon size={42} />
-            </div>
-          )}
+          <ProfilePhoto
+            src={profile.photoUrl}
+            name={profile.firstName}
+            className="aspect-[4/3] w-full rounded-lg"
+            iconSize={42}
+          />
           <div className="mt-5 flex flex-wrap gap-2">
             <span className={getParticipationClass(participation)}>{participation}</span>
             <span className="inline-flex items-center gap-1.5 rounded-lg bg-conecly-mist px-3 py-1.5 text-sm font-semibold text-conecly-teal">
@@ -440,15 +435,13 @@ function ProfileCard({ profile }) {
     <a href={profileHref} className="premium-card flex h-full flex-col overflow-hidden p-5 sm:p-6">
       <div className="flex items-start justify-between gap-4">
         <div className="flex min-w-0 gap-3">
-          {profile.photoUrl ? (
-            <img src={profile.photoUrl} alt="" className="h-12 w-12 shrink-0 rounded-lg object-cover" />
-          ) : null}
+          <ProfilePhoto src={profile.photoUrl} name={profile.firstName} className="h-12 w-12 shrink-0 rounded-lg" />
           <div className="min-w-0">
-          <h2 className="truncate text-xl font-semibold leading-tight text-conecly-ink">{profile.firstName}</h2>
-          <p className="mt-2 flex items-center gap-2 text-sm font-medium text-conecly-ink/58">
-            <MapPin size={15} className="shrink-0 text-conecly-clay" />
-            <span className="truncate">{[profile.city, profile.neighbourhood].filter(Boolean).join(" / ")}</span>
-          </p>
+            <h2 className="truncate text-xl font-semibold leading-tight text-conecly-ink">{profile.firstName}</h2>
+            <p className="mt-2 flex items-center gap-2 text-sm font-medium text-conecly-ink/58">
+              <MapPin size={15} className="shrink-0 text-conecly-clay" />
+              <span className="truncate">{[profile.city, profile.neighbourhood].filter(Boolean).join(" / ")}</span>
+            </p>
           </div>
         </div>
         <span className={getParticipationClass(participation)}>{participation}</span>
@@ -505,6 +498,18 @@ function ProfileDetailShell({ children }) {
         {children}
       </div>
     </section>
+  );
+}
+
+function ProfilePhoto({ src, name, className, iconSize = 20 }) {
+  if (src) {
+    return <img src={src} alt={name ? `${name} profile` : ""} className={`${className} object-cover`} loading="lazy" />;
+  }
+
+  return (
+    <div className={`${className} flex items-center justify-center bg-conecly-mist text-conecly-teal`}>
+      <ImageIcon size={iconSize} />
+    </div>
   );
 }
 

@@ -1,4 +1,4 @@
-import { Clock3, Mail, MapPin, Phone, SlidersHorizontal, Sparkles, Tag } from "lucide-react";
+import { Clock3, Image as ImageIcon, Mail, MapPin, Phone, SlidersHorizontal, Sparkles, Tag } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import SectionHeader from "../components/SectionHeader";
 import { sampleProfiles, serviceCategories } from "../data";
@@ -152,12 +152,15 @@ function ProfileCard({ profile }) {
   return (
     <article className="premium-card flex h-full flex-col p-5 sm:p-6">
       <div className="flex items-start justify-between gap-4">
-        <div className="min-w-0">
-          <h3 className="text-xl font-semibold text-conecly-ink">{profile.firstName}</h3>
-          <p className="mt-2 flex items-center gap-2 text-sm font-medium text-conecly-ink/58">
-            <MapPin size={16} className="shrink-0 text-conecly-clay" />
-            <span className="truncate">{profile.city}</span>
-          </p>
+        <div className="flex min-w-0 gap-3">
+          <ProfilePhoto src={profile.photoUrl} name={profile.firstName} />
+          <div className="min-w-0">
+            <h3 className="truncate text-xl font-semibold text-conecly-ink">{profile.firstName}</h3>
+            <p className="mt-2 flex items-center gap-2 text-sm font-medium text-conecly-ink/58">
+              <MapPin size={16} className="shrink-0 text-conecly-clay" />
+              <span className="truncate">{profile.city}</span>
+            </p>
+          </div>
         </div>
         <span className={getParticipationClass(participation)}>{participation}</span>
       </div>
@@ -225,7 +228,20 @@ function mapProfile(profile) {
     rate: profile.rate || "",
     contactMethod: profile.contact_method || "Contact",
     contactDetails: profile.contact_details || profile.contact_value || profile.email || profile.phone || "",
+    photoUrl: profile.photo_url || profile.photoUrl || profile.image_url || profile.avatar_url || "",
   };
+}
+
+function ProfilePhoto({ src, name }) {
+  if (src) {
+    return <img src={src} alt={name ? `${name} profile` : ""} className="h-12 w-12 shrink-0 rounded-lg object-cover" loading="lazy" />;
+  }
+
+  return (
+    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-conecly-mist text-conecly-teal">
+      <ImageIcon size={20} />
+    </div>
+  );
 }
 
 function getParticipationGroup(value = "") {

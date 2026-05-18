@@ -79,6 +79,19 @@ order created_at desc
 
 If Row Level Security is enabled, add a narrow public read policy for the anonymous client so submitted profiles can appear on `/profiles`.
 
+### Profile photo storage
+
+Profile creation supports optional image uploads through Supabase Storage. Run the setup SQL in `supabase/profile-photos-storage.sql` from the Supabase SQL editor before testing uploads in production or preview.
+
+The SQL creates a public `profile-photos` bucket with:
+
+- 2 MB stored object limit
+- JPEG, PNG, and WebP MIME types only
+- public read access for profile images
+- anonymous and authenticated insert access limited to the `public/` folder
+
+The browser validates files before upload, blocks source images larger than 8 MB, resizes large images to a maximum 1200 px edge, and saves the resulting public URL into `profiles.photo_url`.
+
 ## Project Structure
 
 ```text
