@@ -8,6 +8,16 @@ const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
 const MAX_ORIGINAL_IMAGE_BYTES = 8 * 1024 * 1024;
 const MAX_IMAGE_EDGE = 1200;
 const JPEG_QUALITY = 0.82;
+const CROP_ASPECTS = [
+  { label: "Square", value: "square", ratio: 1 },
+  { label: "Portrait", value: "portrait", ratio: 4 / 5 },
+];
+const DEFAULT_CROP = {
+  zoom: 1,
+  x: 50,
+  y: 50,
+  aspect: "square",
+};
 
 const PROFILE_INTENTS = [
   ["Offer help", "I want to Offer help/services"],
@@ -28,6 +38,9 @@ export default function CreateProfile() {
   const [successMessage, setSuccessMessage] = useState("");
   const [photoFile, setPhotoFile] = useState(null);
   const [photoPreviewUrl, setPhotoPreviewUrl] = useState("");
+  const [sourcePhotoFile, setSourcePhotoFile] = useState(null);
+  const [sourcePhotoUrl, setSourcePhotoUrl] = useState("");
+  const [cropSettings, setCropSettings] = useState(DEFAULT_CROP);
   const [photoStatus, setPhotoStatus] = useState("idle");
   const [photoMessage, setPhotoMessage] = useState("");
   const galleryInputRef = useRef(null);
@@ -38,8 +51,11 @@ export default function CreateProfile() {
       if (photoPreviewUrl) {
         URL.revokeObjectURL(photoPreviewUrl);
       }
+      if (sourcePhotoUrl) {
+        URL.revokeObjectURL(sourcePhotoUrl);
+      }
     };
-  }, [photoPreviewUrl]);
+  }, [photoPreviewUrl, sourcePhotoUrl]);
 
   function handlePhotoChange(event) {
     const file = event.target.files?.[0];
@@ -58,25 +74,82 @@ export default function CreateProfile() {
       return;
     }
 
-    const nextPreviewUrl = URL.createObjectURL(file);
+    const nextSourceUrl = URL.createObjectURL(file);
 
     if (photoPreviewUrl) {
       URL.revokeObjectURL(photoPreviewUrl);
     }
+    if (sourcePhotoUrl) {
+      URL.revokeObjectURL(sourcePhotoUrl);
+    }
 
-    setPhotoFile(file);
-    setPhotoPreviewUrl(nextPreviewUrl);
+    setPhotoFile(null);
+    setPhotoPreviewUrl("");
+    setSourcePhotoFile(file);
+    setSourcePhotoUrl(nextSourceUrl);
+    setCropSettings(DEFAULT_CROP);
+    setPhotoStatus("cropping");
+    setPhotoMessage("Position your photo, then use it when it looks right.");
+  }
+
+  async function cropSelectedPhoto() {
+    if (!sourcePhotoFile) {
+      return;
+    }
+
+    setPhotoStatus("processing");
+    setPhotoMessage("Cropping photo...");
+
+    try {
+      const croppedPhoto = await cropProfilePhoto(sourcePhotoFile, cropSettings);
+      const nextPreviewUrl = URL.createObjectURL(croppedPhoto);
+
+      if (photoPreviewUrl) {
+        URL.revokeObjectURL(photoPreviewUrl);
+      }
+
+      setPhotoFile(croppedPhoto);
+      setPhotoPreviewUrl(nextPreviewUrl);
+      setPhotoStatus("cropped");
+      setPhotoMessage("Cropped preview ready. Use photo to attach it to your profile.");
+    } catch (error) {
+      console.error("[CreateProfile] Unable to crop profile photo", error);
+      setPhotoFile(null);
+      setPhotoPreviewUrl("");
+      setPhotoStatus("failed");
+      setPhotoMessage(error.message || "Unable to crop this photo. Please try another image.");
+    }
+  }
+
+  function updateCropSetting(name, value) {
+    setCropSettings((current) => ({
+      ...current,
+      [name]: value,
+    }));
+  }
+
+  function useCroppedPhoto() {
+    if (!photoFile) {
+      return;
+    }
+
     setPhotoStatus("ready");
-    setPhotoMessage("Photo ready to upload.");
+    setPhotoMessage("Cropped photo ready to upload.");
   }
 
   function clearPhoto() {
     if (photoPreviewUrl) {
       URL.revokeObjectURL(photoPreviewUrl);
     }
+    if (sourcePhotoUrl) {
+      URL.revokeObjectURL(sourcePhotoUrl);
+    }
 
     setPhotoFile(null);
     setPhotoPreviewUrl("");
+    setSourcePhotoFile(null);
+    setSourcePhotoUrl("");
+    setCropSettings(DEFAULT_CROP);
     setPhotoStatus("idle");
     setPhotoMessage("");
   }
@@ -276,12 +349,26 @@ export default function CreateProfile() {
                         className="inline-flex items-center justify-center gap-2 rounded-lg border border-conecly-ink/10 bg-white px-4 py-2.5 text-sm font-semibold text-conecly-ink/68 transition hover:border-conecly-clay/30 hover:text-conecly-clay"
                       >
                         <Trash2 size={15} />
-                        Remove
+                        Remove photo
                       </button>
                     )}
                   </div>
                 </div>
               </div>
+              {sourcePhotoUrl && (
+                <PhotoCropper
+                  sourceUrl={sourcePhotoUrl}
+                  previewUrl={photoPreviewUrl}
+                  cropSettings={cropSettings}
+                  isProcessing={photoStatus === "processing"}
+                  hasCroppedPhoto={Boolean(photoFile)}
+                  onChange={updateCropSetting}
+                  onCropPhoto={cropSelectedPhoto}
+                  onUsePhoto={useCroppedPhoto}
+                  onChangePhoto={() => galleryInputRef.current?.click()}
+                  onRemovePhoto={clearPhoto}
+                />
+              )}
               <input
                 ref={galleryInputRef}
                 type="file"
@@ -310,10 +397,16 @@ export default function CreateProfile() {
 
           <button
             type="submit"
-            disabled={isSubmitting || photoStatus === "uploading"}
+            disabled={isSubmitting || photoStatus === "uploading" || photoStatus === "processing"}
             className="inline-flex items-center justify-center gap-2 rounded-lg bg-conecly-forest px-6 py-4 font-semibold text-white shadow-soft transition hover:bg-conecly-teal disabled:cursor-not-allowed disabled:opacity-65 sm:col-span-2"
           >
-            {photoStatus === "uploading" ? "Uploading photo..." : isSubmitting ? "Creating profile..." : "Create profile"}
+            {photoStatus === "uploading"
+              ? "Uploading photo..."
+              : photoStatus === "processing"
+                ? "Cropping photo..."
+                : isSubmitting
+                  ? "Creating profile..."
+                  : "Create profile"}
             <ArrowRight size={17} />
           </button>
 
@@ -343,6 +436,157 @@ export default function CreateProfile() {
         </form>
       </div>
     </section>
+  );
+}
+
+function PhotoCropper({
+  sourceUrl,
+  previewUrl,
+  cropSettings,
+  isProcessing,
+  hasCroppedPhoto,
+  onChange,
+  onCropPhoto,
+  onUsePhoto,
+  onChangePhoto,
+  onRemovePhoto,
+}) {
+  const aspect = getCropAspect(cropSettings.aspect);
+
+  return (
+    <div className="mt-4 grid gap-4 rounded-lg border border-conecly-ink/10 bg-white p-3 sm:p-4">
+      <div className="grid gap-4 md:grid-cols-[1fr_12rem] md:items-start">
+        <div>
+          <div
+            className="relative mx-auto w-full max-w-sm overflow-hidden rounded-lg bg-conecly-ink shadow-line"
+            style={{ aspectRatio: aspect.ratio }}
+          >
+            <img
+              src={sourceUrl}
+              alt="Crop photo preview"
+              className="h-full w-full object-cover"
+              style={{
+                objectPosition: `${cropSettings.x}% ${cropSettings.y}%`,
+                transform: `scale(${cropSettings.zoom})`,
+              }}
+            />
+            <div className="pointer-events-none absolute inset-0 ring-2 ring-inset ring-white/80" />
+          </div>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {CROP_ASPECTS.map((option) => (
+              <button
+                key={option.value}
+                type="button"
+                onClick={() => onChange("aspect", option.value)}
+                className={`rounded-lg border px-3 py-2 text-sm font-semibold transition ${
+                  cropSettings.aspect === option.value
+                    ? "border-conecly-teal bg-conecly-mist text-conecly-teal"
+                    : "border-conecly-ink/10 text-conecly-ink/68 hover:border-conecly-teal/30 hover:text-conecly-teal"
+                }`}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="grid gap-3">
+          <div className="overflow-hidden rounded-lg border border-conecly-ink/10 bg-conecly-paper p-3">
+            <p className="mb-2 text-xs font-semibold uppercase text-conecly-ink/45">Profile preview</p>
+            <div className="mx-auto flex h-28 w-28 items-center justify-center overflow-hidden rounded-lg bg-white text-conecly-teal shadow-line">
+              {previewUrl ? (
+                <img src={previewUrl} alt="Cropped profile preview" className="h-full w-full object-cover" />
+              ) : (
+                <img
+                  src={sourceUrl}
+                  alt="Live crop preview"
+                  className="h-full w-full object-cover"
+                  style={{
+                    objectPosition: `${cropSettings.x}% ${cropSettings.y}%`,
+                    transform: `scale(${cropSettings.zoom})`,
+                  }}
+                />
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid gap-3 sm:grid-cols-3">
+        <RangeField
+          label="Zoom"
+          min="1"
+          max="2.4"
+          step="0.05"
+          value={cropSettings.zoom}
+          onChange={(value) => onChange("zoom", Number(value))}
+        />
+        <RangeField
+          label="Left / right"
+          min="0"
+          max="100"
+          step="1"
+          value={cropSettings.x}
+          onChange={(value) => onChange("x", Number(value))}
+        />
+        <RangeField
+          label="Up / down"
+          min="0"
+          max="100"
+          step="1"
+          value={cropSettings.y}
+          onChange={(value) => onChange("y", Number(value))}
+        />
+      </div>
+
+      <div className="flex flex-wrap gap-2">
+        <button
+          type="button"
+          onClick={onCropPhoto}
+          disabled={isProcessing}
+          className="inline-flex items-center justify-center rounded-lg bg-conecly-forest px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-conecly-teal disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {isProcessing ? "Cropping..." : "Crop photo"}
+        </button>
+        <button
+          type="button"
+          onClick={onUsePhoto}
+          disabled={!hasCroppedPhoto || isProcessing}
+          className="inline-flex items-center justify-center rounded-lg border border-conecly-teal bg-conecly-mist px-4 py-2.5 text-sm font-semibold text-conecly-teal transition hover:border-conecly-teal disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          Use photo
+        </button>
+        <button
+          type="button"
+          onClick={onChangePhoto}
+          className="inline-flex items-center justify-center rounded-lg border border-conecly-ink/10 px-4 py-2.5 text-sm font-semibold text-conecly-ink transition hover:border-conecly-teal/30 hover:text-conecly-teal"
+        >
+          Change photo
+        </button>
+        <button
+          type="button"
+          onClick={onRemovePhoto}
+          className="inline-flex items-center justify-center rounded-lg border border-conecly-ink/10 px-4 py-2.5 text-sm font-semibold text-conecly-ink/68 transition hover:border-conecly-clay/30 hover:text-conecly-clay"
+        >
+          Remove photo
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function RangeField({ label, value, onChange, ...props }) {
+  return (
+    <label className="grid gap-2 text-xs font-semibold uppercase text-conecly-ink/52">
+      {label}
+      <input
+        type="range"
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        className="accent-conecly-teal"
+        {...props}
+      />
+    </label>
   );
 }
 
@@ -376,6 +620,56 @@ async function uploadProfilePhoto(supabase, file) {
   const { data } = supabase.storage.from(PROFILE_PHOTO_BUCKET).getPublicUrl(filePath);
 
   return data.publicUrl;
+}
+
+async function cropProfilePhoto(file, cropSettings) {
+  const image = await loadImage(file);
+  const aspect = getCropAspect(cropSettings.aspect);
+  const cropWidth = Math.round(Math.min(image.width, image.height * aspect.ratio) / cropSettings.zoom);
+  const cropHeight = Math.round(cropWidth / aspect.ratio);
+  const maxSourceX = Math.max(0, image.width - cropWidth);
+  const maxSourceY = Math.max(0, image.height - cropHeight);
+  const sourceX = Math.round((maxSourceX * cropSettings.x) / 100);
+  const sourceY = Math.round((maxSourceY * cropSettings.y) / 100);
+  const outputWidth = aspect.value === "portrait" ? 960 : 900;
+  const outputHeight = Math.round(outputWidth / aspect.ratio);
+
+  const canvas = document.createElement("canvas");
+  canvas.width = outputWidth;
+  canvas.height = outputHeight;
+
+  const context = canvas.getContext("2d");
+  context.drawImage(image.source, sourceX, sourceY, cropWidth, cropHeight, 0, 0, outputWidth, outputHeight);
+  image.close?.();
+
+  const blob = await new Promise((resolve, reject) => {
+    canvas.toBlob(
+      (result) => {
+        if (result) {
+          resolve(result);
+        } else {
+          reject(new Error("Unable to process this image. Please try another photo."));
+        }
+      },
+      "image/jpeg",
+      JPEG_QUALITY,
+    );
+  });
+
+  return new File([blob], getCroppedFileName(file.name), {
+    type: "image/jpeg",
+    lastModified: Date.now(),
+  });
+}
+
+function getCropAspect(value) {
+  return CROP_ASPECTS.find((option) => option.value === value) ?? CROP_ASPECTS[0];
+}
+
+function getCroppedFileName(name = "profile-photo") {
+  const baseName = name.replace(/\.[^.]+$/, "") || "profile-photo";
+
+  return `${baseName}-cropped.jpg`;
 }
 
 async function prepareProfilePhoto(file) {
