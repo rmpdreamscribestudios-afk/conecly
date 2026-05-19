@@ -13,7 +13,7 @@ export default function Header() {
         aria-label="Main navigation"
       >
         <Logo />
-        <div className="hidden items-center gap-8 rounded-full border border-conecly-ink/8 bg-white/62 px-5 py-2.5 shadow-line lg:flex">
+        <div className="hidden items-center gap-5 rounded-full border border-conecly-ink/8 bg-white/62 px-4 py-2.5 shadow-line lg:flex xl:gap-7 xl:px-5">
           {navigation.map((item) => (
             <a
               key={item.href}
